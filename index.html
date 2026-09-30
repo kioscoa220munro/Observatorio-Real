@@ -9,7 +9,7 @@
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="#mapa"><span class="cloud">☁</span><span><strong>Observatorio Real</strong><small>NAZER</small></span></a>
+  <a class="brand" href="#mapa" id="brand-toggle" aria-expanded="false"><span class="cloud">☁</span><span><strong>Observatorio Real</strong><small id="nazer-label">NAZER</small></span><em id="nazer-expanded">Núcleo Administrativo Zonal y Estratégico Regional</em></a>
   <nav class="main-nav" aria-label="Navegación principal">
     <a class="active" href="#mapa">Mapa</a>
     <a href="#dashboard">Dashboard</a>
@@ -28,7 +28,7 @@
     </div>
     <div id="search-results" class="search-results hidden"></div>
     <div id="map" aria-label="Mapa interactivo"></div>
-    <div class="map-help">Tocá el mapa para marcar un punto. Los reportes cercanos se agrupan automáticamente.</div>
+    <div id="category-filter" class="category-filter" aria-label="Filtrar reportes"></div><div class="map-help">Tocá el mapa para marcar un punto. Los reportes cercanos se agrupan automáticamente.</div>
     <div id="point-card" class="point-card hidden">
       <div><strong>Punto seleccionado</strong><button id="clear-point" type="button">×</button></div>
       <span id="address"></span><span id="place"></span><span id="coords"></span>
