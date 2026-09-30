@@ -1,17 +1,65 @@
-document.documentElement.dataset.app="observatorio-real";
-const KEY="observatorio-real-local-history";
-const form=document.querySelector("#report-form"),list=document.querySelector("#history-list"),result=document.querySelector("#report-result"),count=document.querySelector("#cases-count");
-function loadReports(){try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch{return[]}}
-function saveReports(r){localStorage.setItem(KEY,JSON.stringify(r))}
-function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
-let map,clusters;
-function caseType(r){const s=(r.type||r.title||"").toLowerCase();if(/bache|pozo|vereda|calzada/.test(s))return"bache";if(/barrera|guardarrail|baranda|valla|señal|semaforo/.test(s))return"barrera";if(/agua|pérdida|perdida|caño|cañería|fuga/.test(s))return"agua";if(/basura|residuo|limpieza|suciedad|escombro/.test(s))return"basura";return"otro"}
-const typeColors={bache:"#f0b35b",barrera:"#e97979",agua:"#5ab8ff",basura:"#6ed9b0",otro:"#a99bea"};
-function initMap(){const el=document.querySelector("#real-map");if(!el||typeof L==="undefined")return;map=L.map(el,{zoomControl:true}).setView([-34.52,-58.48],12);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors"}).addTo(map);clusters=L.markerClusterGroup({showCoverageOnHover:false,spiderfyOnMaxZoom:true,disableClusteringAtZoom:17,iconCreateFunction:c=>{const n=c.getChildCount(),types={};c.getAllChildMarkers().forEach(m=>types[m.options.caseType]=true);const keys=Object.keys(types),size=n>=20?"large":n>=5?"":"small",color=keys.length===1?typeColors[keys[0]]:"#67d7ad";return L.divIcon({html:`<div class="cluster-bubble ${size}" style="background:${color}">${n}</div>`,className:"",iconSize:[n>=20?50:n>=5?42:34,n>=20?50:n>=5?42:34]})}});map.addLayer(clusters);renderMap();}
-function renderMap(){if(!map||!clusters)return;clusters.clearLayers();const reports=loadReports().filter(r=>Number.isFinite(Number(r.lat))&&Number.isFinite(Number(r.lon)));reports.forEach(r=>{const type=caseType(r);const marker=L.marker([Number(r.lat),Number(r.lon)],{caseType:type}).bindPopup("<strong>#"+escapeHtml(r.id)+" · "+escapeHtml(r.title)+"</strong><br><span>"+escapeHtml(r.description||"Sin descripción.")+"</span>");clusters.addLayer(marker)});if(reports.length){map.fitBounds(L.latLngBounds(reports.map(r=>[Number(r.lat),Number(r.lon)])),{padding:[30,30],maxZoom:14})}}
-function renderHistory(){const reports=loadReports();if(count)count.textContent=reports.length;if(!reports.length){list.innerHTML='<div class="history-empty">Todavía no hay registros en este dispositivo. El primer registro inicia la historia.</div>';return}list.innerHTML=reports.slice().reverse().map(r=>'<article class="history-item"><strong>#'+r.id+' · '+escapeHtml(r.title)+'</strong><span>Registrado '+new Date(r.createdAt).toLocaleString("es-AR")+' · '+(r.lat||"sin latitud")+', '+(r.lon||"sin longitud")+'</span><p>'+escapeHtml(r.description||"Sin descripción.")+'</p></article>').join("")}
-form?.addEventListener("submit",e=>{e.preventDefault();const type=document.querySelector("#report-type").value.trim(),title=document.querySelector("#report-title").value.trim(),description=document.querySelector("#report-description").value.trim(),lat=document.querySelector("#report-lat").value.trim(),lon=document.querySelector("#report-lon").value.trim(),reports=loadReports(),id=String(Date.now()).slice(-8),now=new Date().toISOString();reports.push({id,type,title,description,lat,lon,type:caseType({type,title}),createdAt:now,status:"reportado",history:[{status:"reportado",at:now}]});saveReports(reports);form.reset();result.textContent="Registro #"+id+" guardado en este dispositivo.";renderHistory()});
-document.querySelector("#locate")?.addEventListener("click",()=>{if(!navigator.geolocation){result.textContent="Este dispositivo no permite geolocalización.";return}result.textContent="Buscando ubicación…";navigator.geolocation.getCurrentPosition(pos=>{document.querySelector("#report-lat").value=pos.coords.latitude.toFixed(6);document.querySelector("#report-lon").value=pos.coords.longitude.toFixed(6);result.textContent="Ubicación cargada. Revisala antes de guardar."},()=>{result.textContent="No se pudo obtener la ubicación."},{enableHighAccuracy:true,timeout:10000})});
-renderHistory();
-const localityInput=document.querySelector("#locality"),startBtn=document.querySelector("#start-observatory"),onboardingResult=document.querySelector("#onboarding-result");
-startBtn?.addEventListener("click",()=>{const locality=localityInput?.value.trim();if(!locality){onboardingResult.textContent="Elegí una localidad para comenzar.";return}localStorage.setItem("observatorio-real-locality",locality);onboardingResult.textContent="Localidad seleccionada: "+locality+".";});
+const CENTER=[-58.515,-34.526];
+let map=null;
+let marker=null;
+const card=document.querySelector("#point-card");
+const coords=document.querySelector("#coords");
+
+function showPoint(lngLat){
+  coords.textContent=`${lngLat.lat.toFixed(6)}, ${lngLat.lng.toFixed(6)}`;
+  card.classList.remove("hidden");
+}
+function clearPoint(){
+  if(marker){marker.remove();marker=null;}
+  card.classList.add("hidden");
+}
+function init(){
+  map=new maplibregl.Map({
+    container:"map",
+    style:"https://tiles.openfreemap.org/styles/liberty",
+    center:CENTER,
+    zoom:12,
+    pitch:0,
+    bearing:0,
+    attributionControl:true
+  });
+  map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),"top-right");
+  map.addControl(new maplibregl.ScaleControl({unit:"metric"}),"bottom-left");
+
+  map.on("load",()=>{
+    map.resize();
+    const layers=map.getStyle().layers||[];
+    const buildingLayer=layers.find(l=>l.type==="fill-extrusion" && /building/i.test(l.id));
+    if(buildingLayer){
+      map.setLayoutProperty(buildingLayer.id,"visibility","visible");
+    }
+  });
+
+  map.on("click",(e)=>{
+    if(marker) marker.remove();
+    marker=new maplibregl.Marker({color:"#258bd6"}).setLngLat(e.lngLat).addTo(map);
+    showPoint(e.lngLat);
+  });
+
+  document.querySelector("#clear-point").addEventListener("click",clearPoint);
+  document.querySelector("#save-point").addEventListener("click",()=>{
+    if(!marker)return;
+    const p=marker.getLngLat();
+    localStorage.setItem("observatorio-real-last-point",JSON.stringify({lat:p.lat,lng:p.lng,at:new Date().toISOString()}));
+    document.querySelector("#save-point").textContent="Punto guardado";
+    setTimeout(()=>document.querySelector("#save-point").textContent="Guardar punto",1200);
+  });
+  document.querySelector("#reset-view").addEventListener("click",()=>{
+    map.flyTo({center:CENTER,zoom:12,pitch:0,bearing:0,duration:900});
+  });
+  document.querySelector("#locate").addEventListener("click",()=>{
+    if(!navigator.geolocation)return;
+    navigator.geolocation.getCurrentPosition(pos=>{
+      const p=[pos.coords.longitude,pos.coords.latitude];
+      map.flyTo({center:p,zoom:16,duration:900});
+      if(marker)marker.remove();
+      marker=new maplibregl.Marker({color:"#258bd6"}).setLngLat(p).addTo(map);
+      showPoint({lat:pos.coords.latitude,lng:pos.coords.longitude});
+    });
+  });
+}
+init();
