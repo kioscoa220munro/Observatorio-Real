@@ -4,16 +4,16 @@ let map=null,marker=null,selectedPoint=null;
 const card=document.querySelector("#point-card"),categoryCard=document.querySelector("#category-card");
 const coords=document.querySelector("#coords"),addressEl=document.querySelector("#address"),placeEl=document.querySelector("#place");
 const categories=[
- {id:"bache",icon:"▰",name:"Bache / calle"},
- {id:"alumbrado",icon:"☼",name:"Alumbrado"},
- {id:"basura",icon:"♻",name:"Basura"},
- {id:"verde",icon:"♧",name:"Árbol / espacio verde"},
- {id:"transito",icon:"🚦",name:"Semáforo / tránsito"},
- {id:"accesibilidad",icon:"♿",name:"Accesibilidad"},
- {id:"infraestructura",icon:"⌂",name:"Obra / infraestructura"},
- {id:"agua",icon:"≈",name:"Agua / inundación"},
- {id:"servicio",icon:"◎",name:"Servicio municipal"},
- {id:"otro",icon:"＋",name:"Otro"}
+ {id:"calle",icon:"▰",name:"Calle / bache",sub:["Bache","Calzada rota","Tapa de alcantarilla dañada"]},
+ {id:"alumbrado",icon:"☼",name:"Alumbrado",sub:["Luz apagada","Foco o artefacto dañado","Poste dañado"]},
+ {id:"basura",icon:"♻",name:"Basura / residuos",sub:["Basura acumulada","Microbasural","Recolección no realizada"]},
+ {id:"arboles",icon:"♧",name:"Árboles / verde",sub:["Árbol caído","Rama peligrosa","Poda necesaria","Espacio verde deteriorado"]},
+ {id:"transito",icon:"🚦",name:"Tránsito",sub:["Vehículo mal estacionado","Semáforo fuera de servicio","Señalización dañada","Obstrucción de calzada"]},
+ {id:"accesibilidad",icon:"♿",name:"Accesibilidad",sub:["Rampa bloqueada","Vereda inaccesible","Obstáculo para movilidad"]},
+ {id:"infraestructura",icon:"⌂",name:"Infraestructura",sub:["Vereda rota","Obra deteriorada","Mobiliario urbano dañado"]},
+ {id:"agua",icon:"≈",name:"Agua / riesgo",sub:["Pérdida de agua","Inundación","Cables caídos / riesgo eléctrico"]},
+ {id:"servicios",icon:"◎",name:"Servicios",sub:["Servicio municipal no realizado","Problema reiterado","Incumplimiento de servicio"]},
+ {id:"riesgo",icon:"!",name:"Riesgo / emergencia",sub:["Situación peligrosa","Obstrucción o riesgo inmediato","Riesgo para personas o bienes"]}
 ];
 function loadPoints(){try{return JSON.parse(localStorage.getItem(STORAGE)||"[]")}catch{return[]}}
 function savePoints(points){localStorage.setItem(STORAGE,JSON.stringify(points))}
@@ -32,12 +32,19 @@ async function reverseGeocode(lat,lng){
 function categoryUI(){
  const grid=document.querySelector("#category-grid");grid.innerHTML="";
  categories.forEach(c=>{const b=document.createElement("button");b.type="button";b.className="category-button";
- b.innerHTML=`<span class="category-icon">${c.icon}</span><span>${c.name}</span>`;b.addEventListener("click",()=>publishPoint(c));grid.appendChild(b)})
+ b.innerHTML='<span class="category-icon">'+c.icon+'</span><span>'+c.name+'</span>';
+ b.addEventListener("click",()=>openSubcategory(c));grid.appendChild(b)})
 }
-function publishPoint(category){
+function openSubcategory(category){
+ const grid=document.querySelector("#category-grid");
+ grid.innerHTML='<div class="subcategory-head"><button type="button" id="back-categories">←</button><strong>'+category.name+'</strong></div>';
+ category.sub.forEach(name=>{const b=document.createElement("button");b.type="button";b.className="subcategory-button";b.textContent=name;b.addEventListener("click",()=>publishPoint(category,name));grid.appendChild(b)});
+ document.querySelector("#back-categories").addEventListener("click",categoryUI);
+}
+function publishPoint(category,subtype){
  if(!selectedPoint)return;
  const now=new Date().toISOString(),points=loadPoints();
- const p={id:makeId(),createdAt:now,updatedAt:now,lat:selectedPoint.lat,lng:selectedPoint.lng,address:addressEl.textContent,place:placeEl.textContent,category:category.id,categoryName:category.name,status:"reportado",source:"aporte_ciudadano",evidence:[],history:[{at:now,type:"status",value:"reportado",source:"aporte_ciudadano"}]};
+ const p={id:makeId(),createdAt:now,updatedAt:now,lat:selectedPoint.lat,lng:selectedPoint.lng,address:addressEl.textContent,place:placeEl.textContent,category:category.id,categoryName:category.name,subtype:subtype,status:"reportado",source:"aporte_ciudadano",evidence:[],history:[{at:now,type:"status",value:"reportado",source:"aporte_ciudadano"}]};
  points.push(p);savePoints(points);categoryCard.classList.add("hidden");card.classList.add("hidden");
  if(marker){marker.remove();marker=null}selectedPoint=null;refreshReports();refreshDashboard();refreshHistory();
  document.querySelector("#mapa").scrollIntoView({behavior:"smooth",block:"start"});
@@ -68,7 +75,7 @@ function fmtDate(iso){return new Intl.DateTimeFormat("es-AR",{dateStyle:"short",
 function refreshHistory(){
  const list=document.querySelector("#history-list"),points=loadPoints().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
  if(!points.length){list.innerHTML='<div class="empty-state">Todavía no hay puntos publicados.</div>';return}
- list.innerHTML=points.map(p=>`<article class="history-card"><div class="history-main"><strong>${p.categoryName}</strong><span class="status-pill">${p.status}</span><small>${p.address||"Ubicación sin dirección"}</small><small>${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}</small></div><div class="timeline">${p.history.map(e=>`<div><b>${e.value}</b><span>${fmtDate(e.at)} · ${e.source}</span></div>`).join("")}</div></article>`).join("");
+ list.innerHTML=points.map(p=>`<article class="history-card"><div class="history-main"><strong>${p.categoryName}</strong><small>${p.subtype||""}</small><span class="status-pill">${p.status}</span><small>${p.address||"Ubicación sin dirección"}</small><small>${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}</small></div><div class="timeline">${p.history.map(e=>`<div><b>${e.value}</b><span>${fmtDate(e.at)} · ${e.source}</span></div>`).join("")}</div></article>`).join("");
 }
 async function searchAddress(){
  const input=document.querySelector("#address-search"),results=document.querySelector("#search-results"),q=input.value.trim();if(!q)return;
