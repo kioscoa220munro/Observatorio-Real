@@ -9,44 +9,54 @@
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="./"><span class="cloud">☁</span><span><strong>Observatorio Real</strong><small>NAZER</small></span></a>
+  <a class="brand" href="#mapa"><span class="cloud">☁</span><span><strong>Observatorio Real</strong><small>NAZER</small></span></a>
   <nav class="main-nav" aria-label="Navegación principal">
-    <a href="#inicio">Inicio</a>
     <a class="active" href="#mapa">Mapa</a>
-    <a href="#reportar">Reportar</a>
-    <a href="#propuestas">Propuestas</a>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#historico">Histórico</a>
   </nav>
   <span class="status"><i></i>Mapa activo</span>
 </header>
 <main id="inicio">
   <section class="map-shell" id="mapa">
     <div class="map-toolbar">
-      <div>
-        <span class="eyebrow">NAZER · MAPA REAL</span>
-        <h1>Observá el territorio</h1>
-      </div>
+      <div><span class="eyebrow">NAZER · MAPA REAL</span><h1>Observá el territorio</h1></div>
       <div class="toolbar-actions">
-        <label class="search-box">
-          <span aria-hidden="true">⌕</span>
-          <input id="address-search" type="search" placeholder="Buscar dirección, calle o lugar…" autocomplete="off">
-          <button id="search-button" type="button">Buscar</button>
-        </label>
+        <label class="search-box"><span aria-hidden="true">⌕</span><input id="address-search" type="search" placeholder="Buscar dirección, calle o lugar…" autocomplete="off"><button id="search-button" type="button">Buscar</button></label>
         <button id="locate" class="tool-button secondary-tool" type="button">Mi ubicación</button>
       </div>
     </div>
     <div id="search-results" class="search-results hidden"></div>
     <div id="map" aria-label="Mapa interactivo"></div>
-    <div class="map-help">Tocá el mapa para marcar un punto. Arrastrá para mover · pellizcá para zoom · incliná con dos dedos.</div>
+    <div class="map-help">Tocá el mapa para marcar un punto. Los reportes cercanos se agrupan automáticamente.</div>
     <div id="point-card" class="point-card hidden">
       <div><strong>Punto seleccionado</strong><button id="clear-point" type="button">×</button></div>
-      <span id="address"></span>
-      <span id="place"></span>
-      <span id="coords"></span>
+      <span id="address"></span><span id="place"></span><span id="coords"></span>
       <button id="save-point" class="save-button" type="button">Guardar punto</button>
     </div>
+    <div id="category-card" class="category-card hidden">
+      <div class="card-heading"><strong>¿Qué vas a exponer?</strong><button id="close-category" type="button">×</button></div>
+      <p>Elegí una categoría para mantener los datos ordenados y comparables.</p>
+      <div id="category-grid" class="category-grid"></div>
+    </div>
   </section>
-  <section id="reportar" class="secondary-section"><strong>Reportar</strong><span>Seleccioná un punto en el mapa para iniciar un reporte.</span></section>
-  <section id="propuestas" class="secondary-section"><strong>Propuestas</strong><span>Las propuestas tendrán su espacio propio y trazable.</span></section>
+
+  <section id="dashboard" class="data-section">
+    <div class="section-title"><span class="eyebrow">DASHBOARD</span><h2>Datos publicados</h2></div>
+    <div class="stats-grid">
+      <div><strong id="stat-total">0</strong><span>Puntos</span></div>
+      <div><strong id="stat-open">0</strong><span>Activos</span></div>
+      <div><strong id="stat-resolved">0</strong><span>Resueltos</span></div>
+      <div><strong id="stat-categories">0</strong><span>Categorías</span></div>
+    </div>
+    <div id="category-summary" class="category-summary"></div>
+  </section>
+
+  <section id="historico" class="data-section">
+    <div class="section-title"><span class="eyebrow">HISTÓRICO</span><h2>Todos los puntos desde su origen</h2></div>
+    <p class="section-note">El histórico no borra ni reemplaza puntos: conserva la línea de tiempo completa de cada uno.</p>
+    <div id="history-list" class="history-list"><div class="empty-state">Todavía no hay puntos publicados.</div></div>
+  </section>
 </main>
 <footer>Observatorio Real · datos reales, trazables y abiertos</footer>
 <script src="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.js"></script>
