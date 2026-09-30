@@ -9,26 +9,44 @@
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="./"><span class="cloud">☁</span><span>Observatorio Real</span></a>
+  <a class="brand" href="./"><span class="cloud">☁</span><span><strong>Observatorio Real</strong><small>NAZER</small></span></a>
+  <nav class="main-nav" aria-label="Navegación principal">
+    <a href="#inicio">Inicio</a>
+    <a class="active" href="#mapa">Mapa</a>
+    <a href="#reportar">Reportar</a>
+    <a href="#propuestas">Propuestas</a>
+  </nav>
   <span class="status"><i></i>Mapa activo</span>
 </header>
-<main>
-  <section class="map-shell">
+<main id="inicio">
+  <section class="map-shell" id="mapa">
     <div class="map-toolbar">
       <div>
         <span class="eyebrow">NAZER · MAPA REAL</span>
         <h1>Observá el territorio</h1>
       </div>
-      <div class="toolbar-actions"><button id="locate" class="tool-button secondary-tool" type="button">Usar mi ubicación</button></div>
+      <div class="toolbar-actions">
+        <label class="search-box">
+          <span aria-hidden="true">⌕</span>
+          <input id="address-search" type="search" placeholder="Buscar dirección, calle o lugar…" autocomplete="off">
+          <button id="search-button" type="button">Buscar</button>
+        </label>
+        <button id="locate" class="tool-button secondary-tool" type="button">Mi ubicación</button>
+      </div>
     </div>
+    <div id="search-results" class="search-results hidden"></div>
     <div id="map" aria-label="Mapa interactivo"></div>
     <div class="map-help">Tocá el mapa para marcar un punto. Arrastrá para mover · pellizcá para zoom · incliná con dos dedos.</div>
     <div id="point-card" class="point-card hidden">
       <div><strong>Punto seleccionado</strong><button id="clear-point" type="button">×</button></div>
+      <span id="address"></span>
+      <span id="place"></span>
       <span id="coords"></span>
       <button id="save-point" class="save-button" type="button">Guardar punto</button>
     </div>
   </section>
+  <section id="reportar" class="secondary-section"><strong>Reportar</strong><span>Seleccioná un punto en el mapa para iniciar un reporte.</span></section>
+  <section id="propuestas" class="secondary-section"><strong>Propuestas</strong><span>Las propuestas tendrán su espacio propio y trazable.</span></section>
 </main>
 <footer>Observatorio Real · datos reales, trazables y abiertos</footer>
 <script src="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.js"></script>
