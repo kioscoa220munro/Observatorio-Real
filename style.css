@@ -19,3 +19,4 @@ h1{font-size:clamp(25px,4vw,38px);line-height:1.05;margin:5px 0 0;letter-spacing
 .hidden{display:none}
 footer{text-align:center;padding:12px;color:#718899;font-size:11px;border-top:1px solid #dbe8f1;background:#fff}
 @media(max-width:700px){.map-shell{padding:10px 10px 16px}.map-toolbar{align-items:flex-start}.toolbar-actions{flex-direction:column}.tool-button{padding:8px 10px}#map{height:calc(100vh - 174px);min-height:420px}.map-help{font-size:11px}.point-card{left:14px;bottom:42px;width:calc(100vw - 28px)}}
+.map-error{height:100%;display:grid;place-items:center;color:#5e7889;background:#eaf4fa;font-size:14px}.secondary-tool{display:none}@media(max-width:700px){.secondary-tool{display:block}}
