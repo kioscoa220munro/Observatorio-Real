@@ -1,19 +1,19 @@
 const CENTER=[-58.515,-34.526];
 const STORAGE="observatorio-real-points";
-let map=null,marker=null,selectedPoint=null;
+let map=null,marker=null,selectedPoint=null,activeCategory="all";
 const card=document.querySelector("#point-card"),categoryCard=document.querySelector("#category-card");
 const coords=document.querySelector("#coords"),addressEl=document.querySelector("#address"),placeEl=document.querySelector("#place");
 const categories=[
- {id:"calle",icon:"▰",name:"Calle / bache",sub:["Bache","Calzada rota","Tapa de alcantarilla dañada"]},
- {id:"alumbrado",icon:"☼",name:"Alumbrado",sub:["Luz apagada","Foco o artefacto dañado","Poste dañado"]},
- {id:"basura",icon:"♻",name:"Basura / residuos",sub:["Basura acumulada","Microbasural","Recolección no realizada"]},
- {id:"arboles",icon:"♧",name:"Árboles / verde",sub:["Árbol caído","Rama peligrosa","Poda necesaria","Espacio verde deteriorado"]},
- {id:"transito",icon:"🚦",name:"Tránsito",sub:["Vehículo mal estacionado","Semáforo fuera de servicio","Señalización dañada","Obstrucción de calzada"]},
- {id:"accesibilidad",icon:"♿",name:"Accesibilidad",sub:["Rampa bloqueada","Vereda inaccesible","Obstáculo para movilidad"]},
- {id:"infraestructura",icon:"⌂",name:"Infraestructura",sub:["Vereda rota","Obra deteriorada","Mobiliario urbano dañado"]},
- {id:"agua",icon:"≈",name:"Agua / riesgo",sub:["Pérdida de agua","Inundación","Cables caídos / riesgo eléctrico"]},
- {id:"servicios",icon:"◎",name:"Servicios",sub:["Servicio municipal no realizado","Problema reiterado","Incumplimiento de servicio"]},
- {id:"riesgo",icon:"!",name:"Riesgo / emergencia",sub:["Situación peligrosa","Obstrucción o riesgo inmediato","Riesgo para personas o bienes"]}
+ {id:"transito",icon:"🚦",name:"Tránsito",color:"#258bd6",sub:["Bache","Vehículo mal estacionado","Semáforo fuera de servicio","Señalización dañada","Obstrucción de calzada"]},
+ {id:"residuos",icon:"♻",name:"Residuos",color:"#6b8e23",sub:["Residuos / basura acumulada","Basura reiterada","Recolección no realizada","Microbasural"]},
+ {id:"defensa-civil",icon:"⚠",name:"Defensa Civil / Riesgo",color:"#d67b25",sub:["Cable caído","Poste peligroso","Árbol caído","Inundación","Situación de riesgo"]},
+ {id:"alumbrado",icon:"☼",name:"Alumbrado",color:"#d6a925",sub:["Luz apagada","Artefacto dañado","Poste de alumbrado dañado"]},
+ {id:"espacios-verdes",icon:"♧",name:"Espacios verdes",color:"#3d9b62",sub:["Rama peligrosa","Poda necesaria","Espacio verde deteriorado"]},
+ {id:"accesibilidad",icon:"♿",name:"Accesibilidad",color:"#7b61a8",sub:["Rampa bloqueada","Vereda inaccesible","Obstáculo para movilidad"]},
+ {id:"infraestructura",icon:"⌂",name:"Infraestructura",color:"#7b8794",sub:["Vereda rota","Obra deteriorada","Mobiliario urbano dañado"]},
+ {id:"agua",icon:"≈",name:"Agua / saneamiento",color:"#2499b5",sub:["Pérdida de agua","Aniego / inundación","Desagüe obstruido"]},
+ {id:"servicios",icon:"◎",name:"Servicios",color:"#a05a9b",sub:["Servicio no realizado","Problema reiterado","Incumplimiento de servicio"]},
+ {id:"seguridad",icon:"◉",name:"Seguridad / incidentes",color:"#b84a4a",sub:["Robo","Intento de robo","Hurto","Daño a propiedad","Incidente en transporte público","Zona con reiteración de incidentes"]}
 ];
 function loadPoints(){try{return JSON.parse(localStorage.getItem(STORAGE)||"[]")}catch{return[]}}
 function savePoints(points){localStorage.setItem(STORAGE,JSON.stringify(points))}
@@ -49,18 +49,32 @@ function publishPoint(category,subtype){
  if(marker){marker.remove();marker=null}selectedPoint=null;refreshReports();refreshDashboard();refreshHistory();
  document.querySelector("#mapa").scrollIntoView({behavior:"smooth",block:"start"});
 }
+function renderCategoryFilter(){
+ const wrap=document.querySelector("#category-filter"); if(!wrap)return;
+ wrap.innerHTML="";
+ const all=document.createElement("button"); all.type="button"; all.className="filter-chip active"; all.textContent="Todos";
+ all.dataset.category="all"; wrap.appendChild(all);
+ categories.forEach(c=>{const b=document.createElement("button");b.type="button";b.className="filter-chip";b.textContent=c.name;b.dataset.category=c.id;b.style.setProperty("--chip-color",c.color);wrap.appendChild(b)});
+ wrap.addEventListener("click",e=>{const b=e.target.closest(".filter-chip");if(!b)return;activeCategory=b.dataset.category;wrap.querySelectorAll(".filter-chip").forEach(x=>x.classList.toggle("active",x===b));refreshReports();applyMapFilter()},{once:true});
+}
+function applyMapFilter(){
+ if(!map||!map.getLayer("report-points"))return;
+ const pointFilter=activeCategory==="all"?["!",["has","point_count"]]:["all",["!",["has","point_count"]],["==",["get","categoryId"],activeCategory]];
+ const clusterFilter=activeCategory==="all"?["has","point_count"]:["all",["has","point_count"],["==",["get","clusterCategory"],activeCategory]];
+ map.setFilter("report-points",pointFilter);map.setFilter("report-clusters",clusterFilter);map.setFilter("report-cluster-count",clusterFilter);
+}
 function refreshReports(){
  if(!map||!map.isStyleLoaded())return;
- const features=loadPoints().map(p=>({type:"Feature",geometry:{type:"Point",coordinates:[p.lng,p.lat]},properties:{id:p.id,category:p.categoryName,status:p.status}}));
+ const features=loadPoints().map(p=>({type:"Feature",geometry:{type:"Point",coordinates:[p.lng,p.lat]},properties:{id:p.id,category:p.categoryName,categoryId:p.category,status:p.status}}));
  const src=map.getSource("reports");
  if(src)src.setData({type:"FeatureCollection",features});
 }
 function addReportLayers(){
  if(map.getSource("reports"))return;
- map.addSource("reports",{type:"geojson",data:{type:"FeatureCollection",features:[]},cluster:true,clusterMaxZoom:16,clusterRadius:48});
- map.addLayer({id:"report-clusters",type:"circle",source:"reports",filter:["has","point_count"],paint:{"circle-radius":["step",["get","point_count"],20,10,26,50,32],"circle-color":"#173247","circle-opacity":.88,"circle-stroke-width":2,"circle-stroke-color":"#fff"}});
+ map.addSource("reports",{type:"geojson",data:{type:"FeatureCollection",features:[]},cluster:true,clusterMaxZoom:16,clusterRadius:48,clusterProperties:{clusterCategory:["coalesce",["get","categoryId"],"unknown"]}});
+ map.addLayer({id:"report-clusters",type:"circle",source:"reports",filter:["has","point_count"],paint:{"circle-radius":["step",["get","point_count"],20,10,26,50,32],"circle-color":["match",["get","clusterCategory"],...categories.flatMap(c=>[c.id,c.color]),"#173247"],"circle-opacity":.88,"circle-stroke-width":2,"circle-stroke-color":"#fff"}});
  map.addLayer({id:"report-cluster-count",type:"symbol",source:"reports",filter:["has","point_count"],layout:{"text-field":["get","point_count_abbreviated"],"text-size":12},paint:{"text-color":"#fff"}});
- map.addLayer({id:"report-points",type:"circle",source:"reports",filter:["!",["has","point_count"]],paint:{"circle-radius":7,"circle-color":"#258bd6","circle-stroke-color":"#fff","circle-stroke-width":2}});
+ map.addLayer({id:"report-points",type:"circle",source:"reports",filter:["!",["has","point_count"]],paint:{"circle-radius":7,"circle-color":["match",["get","categoryId"],...categories.flatMap(c=>[c.id,c.color]),"#258bd6"],"circle-stroke-color":"#fff","circle-stroke-width":2}});
  map.on("click","report-clusters",e=>{const f=map.queryRenderedFeatures(e.point,{layers:["report-clusters"]})[0];map.getSource("reports").getClusterExpansionZoom(f.properties.cluster_id,(err,zoom)=>{if(!err)map.easeTo({center:f.geometry.coordinates,zoom})})});
  map.on("click","report-points",e=>{const p=e.features[0].properties;const all=loadPoints();const item=all.find(x=>x.id===p.id);if(item){map.flyTo({center:[item.lng,item.lat],zoom:17});}});
 }
@@ -89,16 +103,17 @@ async function searchAddress(){
 }
 function init(){
  if(typeof maplibregl==="undefined"){document.querySelector("#map").innerHTML="<div class='map-error'>No se pudo cargar el motor del mapa.</div>";return}
- categoryUI();
+ categoryUI();renderCategoryFilter();
  map=new maplibregl.Map({container:"map",style:"https://tiles.openfreemap.org/styles/liberty",center:CENTER,zoom:13,pitch:35,bearing:0,attributionControl:true,cooperativeGestures:false});
  map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),"top-right");map.on("error",e=>console.warn("MapLibre:",e.error||e));
- map.on("load",()=>{map.resize();addReportLayers();refreshReports()});
+ map.on("load",()=>{map.resize();addReportLayers();refreshReports();applyMapFilter()});
  map.on("click",e=>{if(e.defaultPrevented)return;setMarker(e.lngLat.lng,e.lngLat.lat);reverseGeocode(e.lngLat.lat,e.lngLat.lng)});
  document.querySelector("#clear-point").addEventListener("click",clearPoint);
  document.querySelector("#close-category").addEventListener("click",()=>categoryCard.classList.add("hidden"));
  document.querySelector("#save-point").addEventListener("click",()=>{if(!marker)return;categoryCard.classList.remove("hidden")});
  document.querySelector("#locate").addEventListener("click",()=>{if(!navigator.geolocation){alert("La ubicación no está disponible en este dispositivo.");return}navigator.geolocation.getCurrentPosition(pos=>{const p={lat:pos.coords.latitude,lng:pos.coords.longitude};map.flyTo({center:[p.lng,p.lat],zoom:16,pitch:45,duration:800});setMarker(p.lng,p.lat);reverseGeocode(p.lat,p.lng)},()=>alert("No se pudo obtener la ubicación. Podés marcar el punto directamente sobre el mapa."),{enableHighAccuracy:true,timeout:10000,maximumAge:60000})});
- document.querySelector("#search-button").addEventListener("click",searchAddress);document.querySelector("#address-search").addEventListener("keydown",e=>{if(e.key==="Enter")searchAddress()});
+ document.querySelector("#search-button").addEventListener("click",searchAddress);const brand=document.querySelector("#brand-toggle");if(brand)brand.addEventListener("click",e=>{e.preventDefault();const expanded=brand.getAttribute("aria-expanded")==="true";brand.setAttribute("aria-expanded",String(!expanded))});
+ document.querySelector("#address-search").addEventListener("keydown",e=>{if(e.key==="Enter")searchAddress()});
  refreshDashboard();refreshHistory();
 }
 init();
