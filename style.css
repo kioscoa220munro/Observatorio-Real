@@ -5,3 +5,6 @@
 .subcategory-button{min-height:48px;padding:9px 11px;border:1px solid #d5e4ed;border-radius:10px;background:#f9fcfe;color:#24475b;text-align:left;font:inherit;font-size:12px;font-weight:650;cursor:pointer}
 .subcategory-button:hover{border-color:#258bd6;background:#eef7fd}
 .history-main small{font-size:11px;color:#647f91}
+
+.brand{position:relative}.brand em{display:none;font-style:normal;font-size:10px;letter-spacing:.08em;color:#258bd6;max-width:250px;line-height:1.2}.brand.expanded em{display:block}.brand.expanded strong{font-size:13px}.brand.expanded small{font-size:8px}.category-filter{display:flex;gap:7px;overflow-x:auto;padding:4px 0 9px;scrollbar-width:thin}.filter-chip{border:1px solid #d5e4ed;background:#fff;color:#527084;border-radius:999px;padding:7px 11px;font:inherit;font-size:11px;white-space:nowrap;cursor:pointer}.filter-chip.active{background:var(--chip-color,#173247);border-color:var(--chip-color,#173247);color:#fff}.filter-chip:not(.active):hover{border-color:var(--chip-color,#258bd6);color:var(--chip-color,#258bd6)}
+@media(max-width:600px){.brand em{max-width:180px}.category-filter{margin-right:-10px;padding-right:10px}}
