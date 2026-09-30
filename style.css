@@ -1,22 +1,26 @@
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f9fc;color:#173247}
 body{display:flex;flex-direction:column}
-.topbar{height:64px;padding:0 20px;display:flex;align-items:center;border-bottom:1px solid #dbe8f1;background:#fff;position:relative;z-index:5}
-.brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:#173247;font-weight:750;font-size:17px}
+.topbar{min-height:64px;padding:0 20px;display:flex;align-items:center;gap:22px;border-bottom:1px solid #dbe8f1;background:#fff;position:relative;z-index:20}
+.brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:#173247;font-weight:750;font-size:17px;white-space:nowrap}.brand span:last-child{display:flex;flex-direction:column}.brand small{font-size:9px;letter-spacing:.18em;color:#258bd6}
 .cloud{font-size:27px;line-height:1;color:#258bd6}
-.status{margin-left:auto;font-size:12px;color:#537084}.status i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#36a36b;margin-right:6px}
+.main-nav{display:flex;align-items:center;gap:4px}.main-nav a{padding:8px 10px;border-radius:8px;text-decoration:none;color:#537084;font-size:13px}.main-nav a:hover,.main-nav a.active{background:#eef7fd;color:#173247}
+.status{margin-left:auto;font-size:12px;color:#537084;white-space:nowrap}.status i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#36a36b;margin-right:6px}
 main{flex:1}
-.map-shell{width:min(1500px,100%);margin:auto;padding:18px 18px 22px}
+.map-shell{width:min(1500px,100%);margin:auto;padding:18px 18px 22px;position:relative}
 .map-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
 .eyebrow{font-size:11px;letter-spacing:.16em;font-weight:750;color:#258bd6}
 h1{font-size:clamp(25px,4vw,38px);line-height:1.05;margin:5px 0 0;letter-spacing:-.03em}
-.toolbar-actions{display:flex;gap:8px}.tool-button,.save-button{border:1px solid #c9dce9;background:#fff;color:#24506a;border-radius:9px;padding:9px 12px;font:inherit;font-size:13px;cursor:pointer}.tool-button:hover{background:#eef7fd}
+.toolbar-actions{display:flex;align-items:center;gap:8px}.search-box{display:flex;align-items:center;width:min(430px,42vw);height:42px;border:1px solid #c9dce9;border-radius:10px;background:#fff;overflow:hidden;box-shadow:0 5px 18px rgba(25,73,104,.07)}.search-box span{padding-left:12px;color:#258bd6;font-size:20px}.search-box input{flex:1;min-width:0;border:0;outline:0;padding:0 9px;font:inherit;font-size:13px;color:#173247}.search-box button{height:100%;border:0;border-left:1px solid #dbe8f1;background:#eef7fd;color:#24506a;padding:0 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}.tool-button,.save-button{border:1px solid #c9dce9;background:#fff;color:#24506a;border-radius:9px;padding:9px 12px;font:inherit;font-size:13px;cursor:pointer}.tool-button:hover{background:#eef7fd}
 #map{height:calc(100vh - 154px);min-height:480px;border:1px solid #c9dce9;border-radius:14px;overflow:hidden;background:#dcecf6;box-shadow:0 8px 30px rgba(25,73,104,.08)}
 .maplibregl-ctrl-group{border-radius:8px!important;overflow:hidden}.maplibregl-ctrl button{background:#fff!important}
+.search-results{position:absolute;right:18px;top:82px;width:min(430px,42vw);z-index:15;background:#fff;border:1px solid #c9dce9;border-radius:10px;box-shadow:0 12px 30px rgba(18,54,78,.18);overflow:hidden}.search-results button{display:block;width:100%;padding:10px 12px;text-align:left;border:0;border-bottom:1px solid #edf3f7;background:#fff;color:#36576b;font:inherit;font-size:12px;cursor:pointer}.search-results button:hover{background:#eef7fd}
 .map-help{font-size:12px;color:#647f91;padding:8px 2px}
-.point-card{position:fixed;left:28px;bottom:48px;width:min(320px,calc(100vw - 56px));padding:13px;background:#fff;border:1px solid #c9dce9;border-radius:11px;box-shadow:0 12px 35px rgba(18,54,78,.18);z-index:10}
-.point-card>div{display:flex;justify-content:space-between;align-items:center}.point-card button:first-of-type{border:0;background:none;font-size:22px;color:#668092;cursor:pointer}.point-card span{display:block;font-size:12px;color:#5e7889;margin:5px 0 10px}.save-button{background:#258bd6;color:#fff;border-color:#258bd6;width:100%}
+.point-card{position:fixed;left:28px;bottom:48px;width:min(360px,calc(100vw - 56px));padding:13px;background:#fff;border:1px solid #c9dce9;border-radius:11px;box-shadow:0 12px 35px rgba(18,54,78,.18);z-index:18}
+.point-card>div{display:flex;justify-content:space-between;align-items:center}.point-card button:first-of-type{border:0;background:none;font-size:22px;color:#668092;cursor:pointer}.point-card span{display:block;font-size:12px;color:#5e7889;margin:4px 0}.save-button{background:#258bd6;color:#fff;border-color:#258bd6;width:100%;margin-top:7px}
 .hidden{display:none}
+.secondary-section{width:min(1500px,100%);margin:0 auto 14px;padding:22px 18px;border-top:1px solid #dbe8f1;display:flex;gap:12px;flex-direction:column;color:#537084}.secondary-section strong{color:#173247}
 footer{text-align:center;padding:12px;color:#718899;font-size:11px;border-top:1px solid #dbe8f1;background:#fff}
-@media(max-width:700px){.map-shell{padding:10px 10px 16px}.map-toolbar{align-items:flex-start}.toolbar-actions{flex-direction:column}.tool-button{padding:8px 10px}#map{height:calc(100vh - 174px);min-height:420px}.map-help{font-size:11px}.point-card{left:14px;bottom:42px;width:calc(100vw - 28px)}}
-.map-error{height:100%;display:grid;place-items:center;color:#5e7889;background:#eaf4fa;font-size:14px}.secondary-tool{display:none}@media(max-width:700px){.secondary-tool{display:block}}
+@media(max-width:900px){.topbar{gap:10px}.main-nav{order:3;width:100%;justify-content:space-between}.topbar{flex-wrap:wrap;padding:9px 12px}.status{margin-left:auto}.map-toolbar{align-items:flex-start}.toolbar-actions{flex:1;flex-direction:column;align-items:stretch}.search-box{width:100%}#map{height:calc(100vh - 235px);min-height:420px}.search-results{top:127px;right:10px;width:calc(100vw - 20px)}.map-shell{padding:10px 10px 16px}}
+@media(max-width:600px){.main-nav a{font-size:12px;padding:7px 8px}.brand{font-size:15px}.status{font-size:11px}.map-toolbar{flex-direction:column}.toolbar-actions{width:100%}.secondary-tool{display:block;width:100%}.point-card{left:14px;bottom:42px;width:calc(100vw - 28px)}}
+.map-error{height:100%;display:grid;place-items:center;color:#5e7889;background:#eaf4fa;font-size:14px}
