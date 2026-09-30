@@ -118,7 +118,7 @@ function init(){
  document.querySelector("#close-category").addEventListener("click",()=>categoryCard.classList.add("hidden"));
  document.querySelector("#save-point").addEventListener("click",()=>{if(!marker)return;categoryCard.classList.remove("hidden")});
  document.querySelector("#locate").addEventListener("click",()=>{if(!navigator.geolocation){alert("La ubicación no está disponible en este dispositivo.");return}navigator.geolocation.getCurrentPosition(pos=>{const p={lat:pos.coords.latitude,lng:pos.coords.longitude};map.flyTo({center:[p.lng,p.lat],zoom:16,pitch:45,duration:800});setMarker(p.lng,p.lat);reverseGeocode(p.lat,p.lng)},()=>alert("No se pudo obtener la ubicación. Podés marcar el punto directamente sobre el mapa."),{enableHighAccuracy:true,timeout:10000,maximumAge:60000})});
- document.querySelector("#search-button").addEventListener("click",searchAddress);const brand=document.querySelector("#brand-toggle");if(brand)brand.addEventListener("click",e=>{e.preventDefault();const expanded=brand.getAttribute("aria-expanded")==="true";brand.setAttribute("aria-expanded",String(!expanded))});
+ document.querySelector("#search-button").addEventListener("click",searchAddress);const brand=document.querySelector("#brand-toggle");if(brand)brand.addEventListener("click",e=>{e.preventDefault();const expanded=brand.getAttribute("aria-expanded")==="true";brand.setAttribute("aria-expanded",String(!expanded));brand.classList.toggle("expanded",!expanded)});
  document.querySelector("#address-search").addEventListener("keydown",e=>{if(e.key==="Enter")searchAddress()});
  refreshDashboard();refreshHistory();
 }
