@@ -1,91 +1,97 @@
 const CENTER=[-58.515,-34.526];
-let map=null,marker=null;
-const card=document.querySelector("#point-card");
-const coords=document.querySelector("#coords");
-const addressEl=document.querySelector("#address");
-const placeEl=document.querySelector("#place");
-
-function showPoint(p){coords.textContent=`Coordenadas: ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`;card.classList.remove("hidden");}
-function clearPoint(){if(marker){marker.remove();marker=null;}card.classList.add("hidden");}
-function setMarker(lng,lat){if(marker)marker.remove();marker=new maplibregl.Marker({color:"#258bd6"}).setLngLat([lng,lat]).addTo(map);showPoint({lat,lng});}
+const STORAGE="observatorio-real-points";
+let map=null,marker=null,selectedPoint=null;
+const card=document.querySelector("#point-card"),categoryCard=document.querySelector("#category-card");
+const coords=document.querySelector("#coords"),addressEl=document.querySelector("#address"),placeEl=document.querySelector("#place");
+const categories=[
+ {id:"bache",icon:"▰",name:"Bache / calle"},
+ {id:"alumbrado",icon:"☼",name:"Alumbrado"},
+ {id:"basura",icon:"♻",name:"Basura"},
+ {id:"verde",icon:"♧",name:"Árbol / espacio verde"},
+ {id:"transito",icon:"🚦",name:"Semáforo / tránsito"},
+ {id:"accesibilidad",icon:"♿",name:"Accesibilidad"},
+ {id:"infraestructura",icon:"⌂",name:"Obra / infraestructura"},
+ {id:"agua",icon:"≈",name:"Agua / inundación"},
+ {id:"servicio",icon:"◎",name:"Servicio municipal"},
+ {id:"otro",icon:"＋",name:"Otro"}
+];
+function loadPoints(){try{return JSON.parse(localStorage.getItem(STORAGE)||"[]")}catch{return[]}}
+function savePoints(points){localStorage.setItem(STORAGE,JSON.stringify(points))}
+function makeId(){return crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2)}
+function showPoint(p){coords.textContent=`Coordenadas: ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`;card.classList.remove("hidden")}
+function clearPoint(){if(marker){marker.remove();marker=null}selectedPoint=null;card.classList.add("hidden");categoryCard.classList.add("hidden")}
+function setMarker(lng,lat){if(marker)marker.remove();marker=new maplibregl.Marker({color:"#258bd6"}).setLngLat([lng,lat]).addTo(map);selectedPoint={lat,lng};showPoint({lat,lng})}
 async function reverseGeocode(lat,lng){
-  try{
-    const url=`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
-    const res=await fetch(url,{headers:{Accept:"application/json"}});
-    if(!res.ok)throw new Error("geocode");
-    const data=await res.json();
-    addressEl.textContent=data.display_name?data.display_name:"Dirección no disponible";
-    const a=data.address||{};
-    const locality=a.city||a.town||a.village||a.municipality||"";
-    const district=a.county||a.state_district||"";
-    placeEl.textContent=[locality,district].filter(Boolean).join(" · ");
-  }catch{
-    addressEl.textContent="Dirección no disponible";
-    placeEl.textContent="";
-  }
+ try{const url=`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+ const res=await fetch(url,{headers:{Accept:"application/json"}});if(!res.ok)throw new Error();
+ const data=await res.json();addressEl.textContent=data.display_name||"Dirección no disponible";
+ const a=data.address||{},locality=a.city||a.town||a.village||a.municipality||"",district=a.county||a.state_district||"";
+ placeEl.textContent=[locality,district].filter(Boolean).join(" · ");
+ }catch{addressEl.textContent="Dirección no disponible";placeEl.textContent=""}
+}
+function categoryUI(){
+ const grid=document.querySelector("#category-grid");grid.innerHTML="";
+ categories.forEach(c=>{const b=document.createElement("button");b.type="button";b.className="category-button";
+ b.innerHTML=`<span class="category-icon">${c.icon}</span><span>${c.name}</span>`;b.addEventListener("click",()=>publishPoint(c));grid.appendChild(b)})
+}
+function publishPoint(category){
+ if(!selectedPoint)return;
+ const now=new Date().toISOString(),points=loadPoints();
+ const p={id:makeId(),createdAt:now,updatedAt:now,lat:selectedPoint.lat,lng:selectedPoint.lng,address:addressEl.textContent,place:placeEl.textContent,category:category.id,categoryName:category.name,status:"reportado",source:"aporte_ciudadano",evidence:[],history:[{at:now,type:"status",value:"reportado",source:"aporte_ciudadano"}]};
+ points.push(p);savePoints(points);categoryCard.classList.add("hidden");card.classList.add("hidden");
+ if(marker){marker.remove();marker=null}selectedPoint=null;refreshReports();refreshDashboard();refreshHistory();
+ document.querySelector("#mapa").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function refreshReports(){
+ if(!map||!map.isStyleLoaded())return;
+ const features=loadPoints().map(p=>({type:"Feature",geometry:{type:"Point",coordinates:[p.lng,p.lat]},properties:{id:p.id,category:p.categoryName,status:p.status}}));
+ const src=map.getSource("reports");
+ if(src)src.setData({type:"FeatureCollection",features});
+}
+function addReportLayers(){
+ if(map.getSource("reports"))return;
+ map.addSource("reports",{type:"geojson",data:{type:"FeatureCollection",features:[]},cluster:true,clusterMaxZoom:16,clusterRadius:48});
+ map.addLayer({id:"report-clusters",type:"circle",source:"reports",filter:["has","point_count"],paint:{"circle-radius":["step",["get","point_count"],20,10,26,50,32],"circle-color":"#173247","circle-opacity":.88,"circle-stroke-width":2,"circle-stroke-color":"#fff"}});
+ map.addLayer({id:"report-cluster-count",type:"symbol",source:"reports",filter:["has","point_count"],layout:{"text-field":["get","point_count_abbreviated"],"text-size":12},paint:{"text-color":"#fff"}});
+ map.addLayer({id:"report-points",type:"circle",source:"reports",filter:["!",["has","point_count"]],paint:{"circle-radius":7,"circle-color":"#258bd6","circle-stroke-color":"#fff","circle-stroke-width":2}});
+ map.on("click","report-clusters",e=>{const f=map.queryRenderedFeatures(e.point,{layers:["report-clusters"]})[0];map.getSource("reports").getClusterExpansionZoom(f.properties.cluster_id,(err,zoom)=>{if(!err)map.easeTo({center:f.geometry.coordinates,zoom})})});
+ map.on("click","report-points",e=>{const p=e.features[0].properties;const all=loadPoints();const item=all.find(x=>x.id===p.id);if(item){map.flyTo({center:[item.lng,item.lat],zoom:17});}});
+}
+function refreshDashboard(){
+ const points=loadPoints(),open=points.filter(p=>p.status!=="resuelto").length,resolved=points.filter(p=>p.status==="resuelto").length;
+ document.querySelector("#stat-total").textContent=points.length;document.querySelector("#stat-open").textContent=open;
+ document.querySelector("#stat-resolved").textContent=resolved;document.querySelector("#stat-categories").textContent=new Set(points.map(p=>p.category)).size;
+ const counts={};points.forEach(p=>counts[p.categoryName]=(counts[p.categoryName]||0)+1);
+ document.querySelector("#category-summary").innerHTML=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([name,n])=>`<span><b>${n}</b> ${name}</span>`).join("")||"<span>Sin publicaciones todavía.</span>";
+}
+function fmtDate(iso){return new Intl.DateTimeFormat("es-AR",{dateStyle:"short",timeStyle:"short"}).format(new Date(iso))}
+function refreshHistory(){
+ const list=document.querySelector("#history-list"),points=loadPoints().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+ if(!points.length){list.innerHTML='<div class="empty-state">Todavía no hay puntos publicados.</div>';return}
+ list.innerHTML=points.map(p=>`<article class="history-card"><div class="history-main"><strong>${p.categoryName}</strong><span class="status-pill">${p.status}</span><small>${p.address||"Ubicación sin dirección"}</small><small>${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}</small></div><div class="timeline">${p.history.map(e=>`<div><b>${e.value}</b><span>${fmtDate(e.at)} · ${e.source}</span></div>`).join("")}</div></article>`).join("");
 }
 async function searchAddress(){
-  const input=document.querySelector("#address-search");
-  const results=document.querySelector("#search-results");
-  const q=input.value.trim();
-  if(!q)return;
-  results.classList.remove("hidden");
-  results.textContent="Buscando…";
-  try{
-    const query=q.toLowerCase().includes("argentina")?q:`${q}, Argentina`;
-    const url=`https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&q=${encodeURIComponent(query)}`;
-    const res=await fetch(url,{headers:{Accept:"application/json"}});
-    if(!res.ok)throw new Error("search");
-    const data=await res.json();
-    results.innerHTML="";
-    if(!data.length){results.textContent="No encontramos esa dirección.";return;}
-    data.forEach(item=>{
-      const button=document.createElement("button");
-      button.type="button";
-      button.textContent=item.display_name;
-      button.addEventListener("click",()=>{
-        const lng=Number(item.lon),lat=Number(item.lat);
-        map.flyTo({center:[lng,lat],zoom:17,pitch:35,duration:800});
-        setMarker(lng,lat);
-        reverseGeocode(lat,lng);
-        results.classList.add("hidden");
-      });
-      results.appendChild(button);
-    });
-  }catch{
-    results.textContent="No se pudo buscar ahora. Podés marcar el punto directamente en el mapa.";
-  }
+ const input=document.querySelector("#address-search"),results=document.querySelector("#search-results"),q=input.value.trim();if(!q)return;
+ results.classList.remove("hidden");results.textContent="Buscando…";
+ try{const query=q.toLowerCase().includes("argentina")?q:`${q}, Argentina`;
+ const res=await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&q=${encodeURIComponent(query)}`,{headers:{Accept:"application/json"}});
+ if(!res.ok)throw new Error();const data=await res.json();results.innerHTML="";
+ if(!data.length){results.textContent="No encontramos esa dirección.";return}
+ data.forEach(item=>{const b=document.createElement("button");b.type="button";b.textContent=item.display_name;b.addEventListener("click",()=>{const lng=Number(item.lon),lat=Number(item.lat);map.flyTo({center:[lng,lat],zoom:17,pitch:35,duration:800});setMarker(lng,lat);reverseGeocode(lat,lng);results.classList.add("hidden")});results.appendChild(b)})
+ }catch{results.textContent="No se pudo buscar ahora. Podés marcar el punto directamente en el mapa."}
 }
 function init(){
-  if(typeof maplibregl==="undefined"){document.querySelector("#map").innerHTML="<div class='map-error'>No se pudo cargar el motor del mapa.</div>";return;}
-  map=new maplibregl.Map({
-    container:"map",
-    style:"https://tiles.openfreemap.org/styles/liberty",
-    center:CENTER,zoom:13,pitch:35,bearing:0,
-    attributionControl:true,
-    cooperativeGestures:false
-  });
-  map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),"top-right");
-  map.on("error",e=>console.warn("MapLibre:",e.error||e));
-  map.on("load",()=>map.resize());
-  map.on("click",e=>{setMarker(e.lngLat.lng,e.lngLat.lat);reverseGeocode(e.lngLat.lat,e.lngLat.lng);});
-  document.querySelector("#clear-point").addEventListener("click",clearPoint);
-  document.querySelector("#save-point").addEventListener("click",()=>{
-    if(!marker)return;
-    const p=marker.getLngLat();
-    localStorage.setItem("observatorio-real-last-point",JSON.stringify({lat:p.lat,lng:p.lng,at:new Date().toISOString(),address:addressEl.textContent,place:placeEl.textContent}));
-    document.querySelector("#save-point").textContent="Guardado ✓";
-    setTimeout(()=>document.querySelector("#save-point").textContent="Guardar punto",1400);
-  });
-  document.querySelector("#locate").addEventListener("click",()=>{
-    if(!navigator.geolocation){alert("La ubicación no está disponible en este dispositivo.");return;}
-    navigator.geolocation.getCurrentPosition(pos=>{
-      const p={lat:pos.coords.latitude,lng:pos.coords.longitude};
-      map.flyTo({center:[p.lng,p.lat],zoom:16,pitch:45,duration:800});
-      setMarker(p.lng,p.lat);reverseGeocode(p.lat,p.lng);
-    },()=>alert("No se pudo obtener la ubicación. Podés marcar el punto directamente sobre el mapa."),{enableHighAccuracy:true,timeout:10000,maximumAge:60000});
-  });
-  document.querySelector("#search-button").addEventListener("click",searchAddress);
-  document.querySelector("#address-search").addEventListener("keydown",e=>{if(e.key==="Enter")searchAddress();});
+ if(typeof maplibregl==="undefined"){document.querySelector("#map").innerHTML="<div class='map-error'>No se pudo cargar el motor del mapa.</div>";return}
+ categoryUI();
+ map=new maplibregl.Map({container:"map",style:"https://tiles.openfreemap.org/styles/liberty",center:CENTER,zoom:13,pitch:35,bearing:0,attributionControl:true,cooperativeGestures:false});
+ map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),"top-right");map.on("error",e=>console.warn("MapLibre:",e.error||e));
+ map.on("load",()=>{map.resize();addReportLayers();refreshReports()});
+ map.on("click",e=>{if(e.defaultPrevented)return;setMarker(e.lngLat.lng,e.lngLat.lat);reverseGeocode(e.lngLat.lat,e.lngLat.lng)});
+ document.querySelector("#clear-point").addEventListener("click",clearPoint);
+ document.querySelector("#close-category").addEventListener("click",()=>categoryCard.classList.add("hidden"));
+ document.querySelector("#save-point").addEventListener("click",()=>{if(!marker)return;categoryCard.classList.remove("hidden")});
+ document.querySelector("#locate").addEventListener("click",()=>{if(!navigator.geolocation){alert("La ubicación no está disponible en este dispositivo.");return}navigator.geolocation.getCurrentPosition(pos=>{const p={lat:pos.coords.latitude,lng:pos.coords.longitude};map.flyTo({center:[p.lng,p.lat],zoom:16,pitch:45,duration:800});setMarker(p.lng,p.lat);reverseGeocode(p.lat,p.lng)},()=>alert("No se pudo obtener la ubicación. Podés marcar el punto directamente sobre el mapa."),{enableHighAccuracy:true,timeout:10000,maximumAge:60000})});
+ document.querySelector("#search-button").addEventListener("click",searchAddress);document.querySelector("#address-search").addEventListener("keydown",e=>{if(e.key==="Enter")searchAddress()});
+ refreshDashboard();refreshHistory();
 }
 init();
