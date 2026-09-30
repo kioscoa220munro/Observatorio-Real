@@ -58,25 +58,31 @@ function renderCategoryFilter(){
  wrap.addEventListener("click",e=>{const b=e.target.closest(".filter-chip");if(!b)return;activeCategory=b.dataset.category;wrap.querySelectorAll(".filter-chip").forEach(x=>x.classList.toggle("active",x===b));refreshReports();applyMapFilter()},{once:true});
 }
 function applyMapFilter(){
- if(!map||!map.getLayer("report-points"))return;
- const pointFilter=activeCategory==="all"?["!",["has","point_count"]]:["all",["!",["has","point_count"]],["==",["get","categoryId"],activeCategory]];
- const clusterFilter=activeCategory==="all"?["has","point_count"]:["all",["has","point_count"],["==",["get","clusterCategory"],activeCategory]];
- map.setFilter("report-points",pointFilter);map.setFilter("report-clusters",clusterFilter);map.setFilter("report-cluster-count",clusterFilter);
+ if(!map)return;
+ categories.forEach(cat=>{
+   const visible=activeCategory==="all"||activeCategory===cat.id;
+   ["report-clusters-"+cat.id,"report-cluster-count-"+cat.id,"report-points-"+cat.id].forEach(id=>{if(map.getLayer(id))map.setLayoutProperty(id,"visibility",visible?"visible":"none")});
+ });
 }
 function refreshReports(){
  if(!map||!map.isStyleLoaded())return;
- const features=loadPoints().map(p=>({type:"Feature",geometry:{type:"Point",coordinates:[p.lng,p.lat]},properties:{id:p.id,category:p.categoryName,categoryId:p.category,status:p.status}}));
- const src=map.getSource("reports");
- if(src)src.setData({type:"FeatureCollection",features});
+ const points=loadPoints();
+ categories.forEach(cat=>{
+   const features=points.filter(p=>p.category===cat.id).map(p=>({type:"Feature",geometry:{type:"Point",coordinates:[p.lng,p.lat]},properties:{id:p.id,category:p.categoryName,status:p.status,categoryId:p.category}}));
+   const src=map.getSource("reports-"+cat.id); if(src)src.setData({type:"FeatureCollection",features});
+ });
 }
 function addReportLayers(){
- if(map.getSource("reports"))return;
- map.addSource("reports",{type:"geojson",data:{type:"FeatureCollection",features:[]},cluster:true,clusterMaxZoom:16,clusterRadius:48,clusterProperties:{clusterCategory:["coalesce",["get","categoryId"],"unknown"]}});
- map.addLayer({id:"report-clusters",type:"circle",source:"reports",filter:["has","point_count"],paint:{"circle-radius":["step",["get","point_count"],20,10,26,50,32],"circle-color":["match",["get","clusterCategory"],...categories.flatMap(c=>[c.id,c.color]),"#173247"],"circle-opacity":.88,"circle-stroke-width":2,"circle-stroke-color":"#fff"}});
- map.addLayer({id:"report-cluster-count",type:"symbol",source:"reports",filter:["has","point_count"],layout:{"text-field":["get","point_count_abbreviated"],"text-size":12},paint:{"text-color":"#fff"}});
- map.addLayer({id:"report-points",type:"circle",source:"reports",filter:["!",["has","point_count"]],paint:{"circle-radius":7,"circle-color":["match",["get","categoryId"],...categories.flatMap(c=>[c.id,c.color]),"#258bd6"],"circle-stroke-color":"#fff","circle-stroke-width":2}});
- map.on("click","report-clusters",e=>{const f=map.queryRenderedFeatures(e.point,{layers:["report-clusters"]})[0];map.getSource("reports").getClusterExpansionZoom(f.properties.cluster_id,(err,zoom)=>{if(!err)map.easeTo({center:f.geometry.coordinates,zoom})})});
- map.on("click","report-points",e=>{const p=e.features[0].properties;const all=loadPoints();const item=all.find(x=>x.id===p.id);if(item){map.flyTo({center:[item.lng,item.lat],zoom:17});}});
+ if(categories.some(cat=>map.getSource("reports-"+cat.id)))return;
+ categories.forEach(cat=>{
+   const sourceId="reports-"+cat.id,clusterId="report-clusters-"+cat.id,countId="report-cluster-count-"+cat.id,pointsId="report-points-"+cat.id;
+   map.addSource(sourceId,{type:"geojson",data:{type:"FeatureCollection",features:[]},cluster:true,clusterMaxZoom:16,clusterRadius:48});
+   map.addLayer({id:clusterId,type:"circle",source:sourceId,filter:["has","point_count"],paint:{"circle-radius":["step",["get","point_count"],20,10,26,50,32],"circle-color":cat.color,"circle-opacity":.9,"circle-stroke-width":2,"circle-stroke-color":"#fff"}});
+   map.addLayer({id:countId,type:"symbol",source:sourceId,filter:["has","point_count"],layout:{"text-field":["get","point_count_abbreviated"],"text-size":12},paint:{"text-color":"#fff"}});
+   map.addLayer({id:pointsId,type:"circle",source:sourceId,filter:["!",["has","point_count"]],paint:{"circle-radius":7,"circle-color":cat.color,"circle-stroke-color":"#fff","circle-stroke-width":2}});
+   map.on("click",clusterId,e=>{const f=map.queryRenderedFeatures(e.point,{layers:[clusterId]})[0];map.getSource(sourceId).getClusterExpansionZoom(f.properties.cluster_id,(err,zoom)=>{if(!err)map.easeTo({center:f.geometry.coordinates,zoom})})});
+   map.on("click",pointsId,e=>{const p=e.features[0].properties,item=loadPoints().find(x=>x.id===p.id);if(item)map.flyTo({center:[item.lng,item.lat],zoom:17})});
+ });
 }
 function refreshDashboard(){
  const points=loadPoints(),open=points.filter(p=>p.status!=="resuelto").length,resolved=points.filter(p=>p.status==="resuelto").length;
