@@ -41,25 +41,48 @@
     </div>
   </section>
 
-  <section id="dashboard" class="data-section">
-    <div class="section-title"><span class="eyebrow">DASHBOARD</span><h2>Datos publicados</h2></div>
-    <div class="stats-grid">
-      <div><strong id="stat-total">0</strong><span>Puntos</span></div>
-      <div><strong id="stat-open">0</strong><span>Activos</span></div>
-      <div><strong id="stat-resolved">0</strong><span>Resueltos</span></div>
-      <div><strong id="stat-categories">0</strong><span>Categorías</span></div>
+  <section id="dashboard" class="dashboard-section">
+    <div class="dashboard-head">
+      <div><span class="eyebrow">OBSERVATORIO EN TIEMPO REAL</span><h2>El territorio habla</h2><p>Los datos aparecen sobre el mapa. Tocá un globo para explorar su categoría y magnitud.</p></div>
+      <div class="dashboard-legend" id="dashboard-legend"></div>
     </div>
-    <div id="category-summary" class="category-summary"></div>
+    <div class="dashboard-map-wrap">
+      <div id="dashboard-map" aria-label="Mapa gráfico del dashboard"></div>
+      <div class="dashboard-overlay" aria-hidden="true">
+        <span class="live-dot"></span> DATOS ABIERTOS · ACTUALIZACIÓN AUTOMÁTICA
+      </div>
+      <div id="dashboard-balloons" class="dashboard-balloons"></div>
+    </div>
   </section>
 
-  <section id="historico" class="data-section">
+  <section id="historico" class="data-section history-section">
     <div class="section-title"><span class="eyebrow">HISTÓRICO</span><h2>Todos los puntos desde su origen</h2></div>
-    <p class="section-note">El histórico no borra ni reemplaza puntos: conserva la línea de tiempo completa de cada uno.</p>
+    <p class="section-note">El histórico conserva la línea de tiempo completa de cada punto, incluso cuando se soluciona.</p>
     <div id="history-list" class="history-list"><div class="empty-state">Todavía no hay puntos publicados.</div></div>
   </section>
 </main>
 <footer>Observatorio Real · datos reales, trazables y abiertos</footer>
 <script src="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.js"></script>
 <script src="./app.js"></script>
+<script>
+(function(){
+  const center=[-58.515,-34.526], colors={transito:'#258bd6',residuos:'#6b8e23','defensa-civil':'#d67b25',alumbrado:'#d6a925','espacios-verdes':'#3d9b62',accesibilidad:'#7b61a8',infraestructura:'#7b8794',agua:'#2499b5',servicios:'#a05a9b',seguridad:'#b84a4a'};
+  let dashMap, lastSignature='';
+  function points(){try{return JSON.parse(localStorage.getItem('observatorio-real-points')||'[]')}catch{return[]}}
+  function fmt(n){return new Intl.NumberFormat('es-AR').format(n)}
+  function refresh(){
+    const ps=points(), counts={}; ps.forEach(p=>counts[p.categoryName]=(counts[p.categoryName]||0)+1);
+    const legend=document.querySelector('#dashboard-legend'); if(legend) legend.innerHTML=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([n,v])=>`<span><i style="background:${colors[(ps.find(p=>p.categoryName===n)||{}).category]||'#258bd6'}"></i>${n} <b>${fmt(v)}</b></span>`).join('')||'<span>Sin datos todavía</span>';
+    const sig=JSON.stringify(ps.map(p=>[p.id,p.lat,p.lng,p.category,p.status])); if(sig===lastSignature)return; lastSignature=sig;
+    if(!dashMap||!dashMap.isStyleLoaded())return;
+    document.querySelectorAll('.dashboard-data-marker').forEach(e=>e.remove());
+    const groups={}; ps.forEach(p=>{const k=p.category+'|'+p.lat.toFixed(3)+'|'+p.lng.toFixed(3);(groups[k]??=[]).push(p)});
+    Object.values(groups).forEach(group=>{const p=group[0], el=document.createElement('div');el.className='dashboard-data-marker';el.style.setProperty('--bubble-color',colors[p.category]||'#258bd6');el.innerHTML=`<div class="bubble-count">${group.length}</div><div class="bubble-label">${p.categoryName}</div>`;new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([p.lng,p.lat]).addTo(dashMap)});
+    const byCat={};ps.forEach(p=>byCat[p.category]=(byCat[p.category]||0)+1);Object.entries(byCat).forEach(([cat,n])=>{const list=ps.filter(p=>p.category===cat),lat=list.reduce((s,p)=>s+p.lat,0)/list.length,lng=list.reduce((s,p)=>s+p.lng,0)/list.length;const el=document.createElement('div');el.className='dashboard-pulse';el.style.setProperty('--bubble-color',colors[cat]||'#258bd6');el.innerHTML=`<strong>${fmt(n)}</strong><span>reportes</span>`;new maplibregl.Marker({element:el,anchor:'center'}).setLngLat([lng,lat]).addTo(dashMap)});
+  }
+  function init(){if(!window.maplibregl||!document.querySelector('#dashboard-map'))return;dashMap=new maplibregl.Map({container:'dashboard-map',style:'https://tiles.openfreemap.org/styles/liberty',center,zoom:12.5,pitch:42,bearing:-12,attributionControl:false});dashMap.addControl(new maplibregl.NavigationControl({showCompass:false}), 'bottom-right');dashMap.on('load',refresh);setInterval(refresh,1500)}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
 </body>
 </html>
