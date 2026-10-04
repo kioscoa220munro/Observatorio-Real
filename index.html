@@ -68,57 +68,155 @@
 (function(){
   const center=[-58.515,-34.526];
   const colors={transito:'#258bd6',residuos:'#6b8e23','defensa-civil':'#d67b25',alumbrado:'#d6a925','espacios-verdes':'#3d9b62',accesibilidad:'#7b61a8',infraestructura:'#7b8794',agua:'#2499b5',servicios:'#a05a9b',seguridad:'#b84a4a'};
-  let dashMap, lastSignature='';
-  function points(){try{return JSON.parse(localStorage.getItem('observatorio-real-points')||'[]')}catch{return[]}}
-  function fmt(n){return new Intl.NumberFormat('es-AR').format(n)}
-  function showCluster(group,marker){
-    document.querySelectorAll('.dashboard-cluster-popup').forEach(e=>e.remove());
-    const bySubtype={}; group.forEach(p=>bySubtype[p.subtype||'Sin especificar']=(bySubtype[p.subtype||'Sin especificar']||0)+1);
-    const active=group.filter(p=>p.status!=='resuelto').length, resolved=group.filter(p=>p.status==='resuelto').length;
-    const el=document.createElement('div'); el.className='dashboard-cluster-popup';
-    el.innerHTML=`<button type="button" class="dashboard-popup-close" aria-label="Cerrar">×</button>
-      <div class="popup-kicker">DATOS DEL TERRITORIO</div>
-      <h3><span class="popup-dot" style="background:${colors[group[0].category]||'#258bd6'}"></span>${group[0].categoryName}</h3>
-      <div class="popup-total">${fmt(group.length)} <small>reportes</small></div>
-      <div class="popup-stats"><span><b>${fmt(active)}</b> activos</span><span><b>${fmt(resolved)}</b> resueltos</span></div>
-      <div class="popup-subtypes">${Object.entries(bySubtype).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,v])=>`<div><span>${n}</span><b>${v}</b></div>`).join('')}</div>
-      <button type="button" class="popup-explore">Ver estos reportes en el mapa</button>`;
-    el.querySelector('.dashboard-popup-close').addEventListener('click',()=>el.remove());
-    el.querySelector('.popup-explore').addEventListener('click',()=>{document.querySelector('#mapa')?.scrollIntoView({behavior:'smooth'});el.remove()});
-    marker.getElement().appendChild(el);
+  let dashMap, dashSource, dashReady=false, refreshTimer;
+  const storage='observatorio-real-points';
+
+  function points(){
+    try{return JSON.parse(localStorage.getItem(storage)||'[]')}catch{return[]}
   }
-  function refresh(){
-    const ps=points(), counts={}; ps.forEach(p=>counts[p.categoryName]=(counts[p.categoryName]||0)+1);
+  function fmt(n){return new Intl.NumberFormat('es-AR').format(n)}
+  function featureCollection(){
+    return {
+      type:'FeatureCollection',
+      features:points().map(p=>({
+        type:'Feature',
+        geometry:{type:'Point',coordinates:[Number(p.lng),Number(p.lat)]},
+        properties:{
+          id:p.id,category:p.category||'',categoryName:p.categoryName||'Sin categoría',
+          subtype:p.subtype||'Sin especificar',condition:p.condition||'',
+          status:p.status||'activo',address:p.address||''
+        }
+      }))
+    };
+  }
+  function popupFor(group,coords){
+    const byCat={};
+    const bySubtype={};
+    group.forEach(p=>{
+      byCat[p.categoryName]=(byCat[p.categoryName]||0)+1;
+      bySubtype[p.subtype]=(bySubtype[p.subtype]||0)+1;
+    });
+    const mainCat=Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0]?.[0]||'Reportes';
+    const active=group.filter(p=>p.status!=='resuelto').length;
+    const resolved=group.filter(p=>p.status==='resuelto').length;
+    const catKey=group.find(p=>p.categoryName===mainCat)?.category||'transito';
+    const rows=Object.entries(bySubtype).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([n,v])=>'<div class="popup-row"><span>'+n+'</span><b>'+fmt(v)+'</b></div>').join('');
+    const html='<div class="dashboard-popup-inner">'+
+      '<div class="popup-kicker">DATOS DEL TERRITORIO</div>'+
+      '<h3><span class="popup-dot" style="background:'+ (colors[catKey]||'#258bd6') +'"></span>'+mainCat+'</h3>'+
+      '<div class="popup-total">'+fmt(group.length)+' <small>reportes</small></div>'+
+      '<div class="popup-stats"><span><b>'+fmt(active)+'</b> activos</span><span><b>'+fmt(resolved)+'</b> resueltos</span></div>'+
+      '<div class="popup-subtypes">'+rows+'</div>'+
+      '<button type="button" class="popup-explore" id="dashboard-explore">Ver estos reportes en el mapa</button>'+
+      '</div>';
+    const popup=new maplibregl.Popup({closeButton:true,closeOnClick:false,maxWidth:'300px'}).setLngLat(coords).setHTML(html).addTo(dashMap);
+    popup.once('open',()=>{
+      document.getElementById('dashboard-explore')?.addEventListener('click',()=>{
+        popup.remove();
+        document.querySelector('#mapa')?.scrollIntoView({behavior:'smooth'});
+      });
+    });
+  }
+  async function clusterClick(e){
+    const f=e.features?.[0]; if(!f)return;
+    const source=dashMap.getSource('dashboard-reports');
+    const clusterId=Number(f.properties.cluster_id);
+    if(!source||!Number.isFinite(clusterId))return;
+    try{
+      const count=Number(f.properties.point_count||0);
+      const leaves=await source.getClusterLeaves(clusterId,Math.min(count,1000),0);
+      const group=leaves.map(x=>x.properties||{});
+      popupFor(group,f.geometry.coordinates);
+    }catch(err){console.warn('Dashboard cluster:',err)}
+  }
+  function update(){
+    const ps=points();
     const legend=document.querySelector('#dashboard-legend');
-    if(legend) legend.innerHTML=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([n,v])=>`<span><i style="background:${colors[(ps.find(p=>p.categoryName===n)||{}).category]||'#258bd6'}"></i>${n} <b>${fmt(v)}</b></span>`).join('')||'<span>Sin datos todavía</span>';
-    const sig=JSON.stringify(ps.map(p=>[p.id,p.lat,p.lng,p.category,p.status]));
-    if(sig===lastSignature)return; lastSignature=sig;
-    if(!dashMap||!dashMap.isStyleLoaded())return;
-    document.querySelectorAll('.dashboard-data-marker,.dashboard-pulse').forEach(e=>e.remove());
-    const groups={};
-    ps.forEach(p=>{const k=p.category+'|'+p.lat.toFixed(3)+'|'+p.lng.toFixed(3);(groups[k]??=[]).push(p)});
-    Object.values(groups).forEach(group=>{
-      const p=group[0],el=document.createElement('div');
-      el.className='dashboard-data-marker';el.style.setProperty('--bubble-color',colors[p.category]||'#258bd6');
-      el.innerHTML=`<button type="button" class="dashboard-bubble" aria-label="Ver ${group.length} reportes de ${p.categoryName}"><span class="bubble-count">${fmt(group.length)}</span><span class="bubble-label">${p.categoryName}</span></button>`;
-      const m=new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([p.lng,p.lat]).addTo(dashMap);
-      el.querySelector('.dashboard-bubble').addEventListener('click',e=>{e.stopPropagation();showCluster(group,m)});
-    });
-    const byCat={};ps.forEach(p=>{(byCat[p.category]??=[]).push(p)});
-    Object.entries(byCat).forEach(([cat,list])=>{
-      const lat=list.reduce((s,p)=>s+p.lat,0)/list.length,lng=list.reduce((s,p)=>s+p.lng,0)/list.length;
-      const el=document.createElement('div');el.className='dashboard-pulse';el.style.setProperty('--bubble-color',colors[cat]||'#258bd6');
-      el.innerHTML=`<button type="button" class="dashboard-pulse-button"><strong>${fmt(list.length)}</strong><span>reportes</span></button>`;
-      const m=new maplibregl.Marker({element:el,anchor:'center'}).setLngLat([lng,lat]).addTo(dashMap);
-      el.querySelector('button').addEventListener('click',e=>{e.stopPropagation();showCluster(list,m)});
-    });
+    const counts={};
+    ps.forEach(p=>counts[p.categoryName]=(counts[p.categoryName]||0)+1);
+    if(legend)legend.innerHTML=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([n,v])=>{
+      const cat=ps.find(p=>p.categoryName===n)?.category;
+      return '<span><i style="background:'+(colors[cat]||'#258bd6')+'"></i>'+n+' <b>'+fmt(v)+'</b></span>';
+    }).join('')||'<span>Sin datos todavía</span>';
+    if(dashReady){
+      dashSource.setData(featureCollection());
+    }
   }
   function init(){
     if(!window.maplibregl||!document.querySelector('#dashboard-map'))return;
-    dashMap=new maplibregl.Map({container:'dashboard-map',style:'https://tiles.openfreemap.org/styles/liberty',center,zoom:12.5,pitch:42,bearing:-12,attributionControl:false,dragRotate:false});
-    dashMap.addControl(new maplibregl.NavigationControl({showCompass:false}), 'bottom-right');
-    dashMap.on('load',refresh);
-    setInterval(refresh,1500);
+    dashMap=new maplibregl.Map({
+      container:'dashboard-map',
+      style:'https://tiles.openfreemap.org/styles/liberty',
+      center,
+      zoom:12.5,
+      pitch:0,
+      bearing:0,
+      attributionControl:false
+    });
+    dashMap.addControl(new maplibregl.NavigationControl({showCompass:false}),'bottom-right');
+    dashMap.on('load',()=>{
+      dashMap.addSource('dashboard-reports',{
+        type:'geojson',
+        data:featureCollection(),
+        cluster:true,
+        clusterMaxZoom:17,
+        clusterRadius:58,
+        clusterMinPoints:2
+      });
+      dashSource=dashMap.getSource('dashboard-reports');
+      dashMap.addLayer({
+        id:'dashboard-clusters',
+        type:'circle',
+        source:'dashboard-reports',
+        filter:['has','point_count'],
+        paint:{
+          'circle-color':['case',['>=',['get','point_count'],50],'#b84a4a',['>=',['get','point_count'],10],'#d67b25','#258bd6'],
+          'circle-radius':['step',['get','point_count'],25,10,32,50,40],
+          'circle-opacity':0.94,
+          'circle-stroke-color':'#fff',
+          'circle-stroke-width':3
+        }
+      });
+      dashMap.addLayer({
+        id:'dashboard-cluster-count',
+        type:'symbol',
+        source:'dashboard-reports',
+        filter:['has','point_count'],
+        layout:{'text-field':['get','point_count_abbreviated'],'text-size':14,'text-font':['Noto Sans Regular'],'text-allow-overlap':true},
+        paint:{'text-color':'#fff','text-halo-color':'rgba(0,0,0,.12)','text-halo-width':1}
+      });
+      dashMap.addLayer({
+        id:'dashboard-points',
+        type:'circle',
+        source:'dashboard-reports',
+        filter:['!',['has','point_count']],
+        paint:{
+          'circle-radius':7,
+          'circle-color':['match',['get','category'],
+            'transito',colors.transito,'residuos',colors.residuos,'defensa-civil',colors['defensa-civil'],
+            'alumbrado',colors.alumbrado,'espacios-verdes',colors['espacios-verdes'],
+            'accesibilidad',colors.accesibilidad,'infraestructura',colors.infraestructura,
+            'agua',colors.agua,'servicios',colors.servicios,'seguridad',colors.seguridad,
+            '#258bd6'],
+          'circle-stroke-color':'#fff',
+          'circle-stroke-width':2
+        }
+      });
+      dashMap.on('click','dashboard-clusters',clusterClick);
+      dashMap.on('click','dashboard-points',e=>{
+        const f=e.features?.[0];if(!f)return;
+        popupFor([f.properties],f.geometry.coordinates);
+      });
+      ['dashboard-clusters','dashboard-points'].forEach(layer=>{
+        dashMap.on('mouseenter',layer,()=>dashMap.getCanvas().style.cursor='pointer');
+        dashMap.on('mouseleave',layer,()=>dashMap.getCanvas().style.cursor='');
+      });
+      dashReady=true;
+      update();
+      dashMap.resize();
+    });
+    update();
+    refreshTimer=setInterval(update,1500);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
