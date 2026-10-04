@@ -66,23 +66,62 @@
 <script src="./app.js"></script>
 <script>
 (function(){
-  const center=[-58.515,-34.526], colors={transito:'#258bd6',residuos:'#6b8e23','defensa-civil':'#d67b25',alumbrado:'#d6a925','espacios-verdes':'#3d9b62',accesibilidad:'#7b61a8',infraestructura:'#7b8794',agua:'#2499b5',servicios:'#a05a9b',seguridad:'#b84a4a'};
+  const center=[-58.515,-34.526];
+  const colors={transito:'#258bd6',residuos:'#6b8e23','defensa-civil':'#d67b25',alumbrado:'#d6a925','espacios-verdes':'#3d9b62',accesibilidad:'#7b61a8',infraestructura:'#7b8794',agua:'#2499b5',servicios:'#a05a9b',seguridad:'#b84a4a'};
   let dashMap, lastSignature='';
   function points(){try{return JSON.parse(localStorage.getItem('observatorio-real-points')||'[]')}catch{return[]}}
   function fmt(n){return new Intl.NumberFormat('es-AR').format(n)}
+  function showCluster(group,marker){
+    document.querySelectorAll('.dashboard-cluster-popup').forEach(e=>e.remove());
+    const bySubtype={}; group.forEach(p=>bySubtype[p.subtype||'Sin especificar']=(bySubtype[p.subtype||'Sin especificar']||0)+1);
+    const active=group.filter(p=>p.status!=='resuelto').length, resolved=group.filter(p=>p.status==='resuelto').length;
+    const el=document.createElement('div'); el.className='dashboard-cluster-popup';
+    el.innerHTML=`<button type="button" class="dashboard-popup-close" aria-label="Cerrar">×</button>
+      <div class="popup-kicker">DATOS DEL TERRITORIO</div>
+      <h3><span class="popup-dot" style="background:${colors[group[0].category]||'#258bd6'}"></span>${group[0].categoryName}</h3>
+      <div class="popup-total">${fmt(group.length)} <small>reportes</small></div>
+      <div class="popup-stats"><span><b>${fmt(active)}</b> activos</span><span><b>${fmt(resolved)}</b> resueltos</span></div>
+      <div class="popup-subtypes">${Object.entries(bySubtype).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,v])=>`<div><span>${n}</span><b>${v}</b></div>`).join('')}</div>
+      <button type="button" class="popup-explore">Ver estos reportes en el mapa</button>`;
+    el.querySelector('.dashboard-popup-close').addEventListener('click',()=>el.remove());
+    el.querySelector('.popup-explore').addEventListener('click',()=>{document.querySelector('#mapa')?.scrollIntoView({behavior:'smooth'});el.remove()});
+    marker.getElement().appendChild(el);
+  }
   function refresh(){
     const ps=points(), counts={}; ps.forEach(p=>counts[p.categoryName]=(counts[p.categoryName]||0)+1);
-    const legend=document.querySelector('#dashboard-legend'); if(legend) legend.innerHTML=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([n,v])=>`<span><i style="background:${colors[(ps.find(p=>p.categoryName===n)||{}).category]||'#258bd6'}"></i>${n} <b>${fmt(v)}</b></span>`).join('')||'<span>Sin datos todavía</span>';
-    const sig=JSON.stringify(ps.map(p=>[p.id,p.lat,p.lng,p.category,p.status])); if(sig===lastSignature)return; lastSignature=sig;
+    const legend=document.querySelector('#dashboard-legend');
+    if(legend) legend.innerHTML=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([n,v])=>`<span><i style="background:${colors[(ps.find(p=>p.categoryName===n)||{}).category]||'#258bd6'}"></i>${n} <b>${fmt(v)}</b></span>`).join('')||'<span>Sin datos todavía</span>';
+    const sig=JSON.stringify(ps.map(p=>[p.id,p.lat,p.lng,p.category,p.status]));
+    if(sig===lastSignature)return; lastSignature=sig;
     if(!dashMap||!dashMap.isStyleLoaded())return;
-    document.querySelectorAll('.dashboard-data-marker').forEach(e=>e.remove());
-    const groups={}; ps.forEach(p=>{const k=p.category+'|'+p.lat.toFixed(3)+'|'+p.lng.toFixed(3);(groups[k]??=[]).push(p)});
-    Object.values(groups).forEach(group=>{const p=group[0], el=document.createElement('div');el.className='dashboard-data-marker';el.style.setProperty('--bubble-color',colors[p.category]||'#258bd6');el.innerHTML=`<div class="bubble-count">${group.length}</div><div class="bubble-label">${p.categoryName}</div>`;new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([p.lng,p.lat]).addTo(dashMap)});
-    const byCat={};ps.forEach(p=>byCat[p.category]=(byCat[p.category]||0)+1);Object.entries(byCat).forEach(([cat,n])=>{const list=ps.filter(p=>p.category===cat),lat=list.reduce((s,p)=>s+p.lat,0)/list.length,lng=list.reduce((s,p)=>s+p.lng,0)/list.length;const el=document.createElement('div');el.className='dashboard-pulse';el.style.setProperty('--bubble-color',colors[cat]||'#258bd6');el.innerHTML=`<strong>${fmt(n)}</strong><span>reportes</span>`;new maplibregl.Marker({element:el,anchor:'center'}).setLngLat([lng,lat]).addTo(dashMap)});
+    document.querySelectorAll('.dashboard-data-marker,.dashboard-pulse').forEach(e=>e.remove());
+    const groups={};
+    ps.forEach(p=>{const k=p.category+'|'+p.lat.toFixed(3)+'|'+p.lng.toFixed(3);(groups[k]??=[]).push(p)});
+    Object.values(groups).forEach(group=>{
+      const p=group[0],el=document.createElement('div');
+      el.className='dashboard-data-marker';el.style.setProperty('--bubble-color',colors[p.category]||'#258bd6');
+      el.innerHTML=`<button type="button" class="dashboard-bubble" aria-label="Ver ${group.length} reportes de ${p.categoryName}"><span class="bubble-count">${fmt(group.length)}</span><span class="bubble-label">${p.categoryName}</span></button>`;
+      const m=new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([p.lng,p.lat]).addTo(dashMap);
+      el.querySelector('.dashboard-bubble').addEventListener('click',e=>{e.stopPropagation();showCluster(group,m)});
+    });
+    const byCat={};ps.forEach(p=>{(byCat[p.category]??=[]).push(p)});
+    Object.entries(byCat).forEach(([cat,list])=>{
+      const lat=list.reduce((s,p)=>s+p.lat,0)/list.length,lng=list.reduce((s,p)=>s+p.lng,0)/list.length;
+      const el=document.createElement('div');el.className='dashboard-pulse';el.style.setProperty('--bubble-color',colors[cat]||'#258bd6');
+      el.innerHTML=`<button type="button" class="dashboard-pulse-button"><strong>${fmt(list.length)}</strong><span>reportes</span></button>`;
+      const m=new maplibregl.Marker({element:el,anchor:'center'}).setLngLat([lng,lat]).addTo(dashMap);
+      el.querySelector('button').addEventListener('click',e=>{e.stopPropagation();showCluster(list,m)});
+    });
   }
-  function init(){if(!window.maplibregl||!document.querySelector('#dashboard-map'))return;dashMap=new maplibregl.Map({container:'dashboard-map',style:'https://tiles.openfreemap.org/styles/liberty',center,zoom:12.5,pitch:42,bearing:-12,attributionControl:false});dashMap.addControl(new maplibregl.NavigationControl({showCompass:false}), 'bottom-right');dashMap.on('load',refresh);setInterval(refresh,1500)}
+  function init(){
+    if(!window.maplibregl||!document.querySelector('#dashboard-map'))return;
+    dashMap=new maplibregl.Map({container:'dashboard-map',style:'https://tiles.openfreemap.org/styles/liberty',center,zoom:12.5,pitch:42,bearing:-12,attributionControl:false,dragRotate:false});
+    dashMap.addControl(new maplibregl.NavigationControl({showCompass:false}), 'bottom-right');
+    dashMap.on('load',refresh);
+    setInterval(refresh,1500);
+  }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
-</script>
+</script>cript>
 </body>
 </html>
