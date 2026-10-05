@@ -19,3 +19,13 @@
 .dashboard-popup-inner .popup-row b{color:#173247}
 .dashboard-popup-inner .popup-explore{width:100%;margin-top:10px;border:1px solid #c9dce9;border-radius:9px;background:#eef7fd;color:#24506a;padding:9px;font:inherit;font-size:10px;font-weight:750;cursor:pointer}
 .dashboard-popup-inner .popup-explore:hover{background:#e1f2fc}
+
+/* Ajustes de interacción */
+.topbar{position:sticky;top:0;z-index:50}
+.secondary-save{background:#fff;color:#258bd6;border-color:#258bd6}
+.popup-actions{display:grid;grid-template-columns:1fr 1.7fr;gap:7px;margin-top:10px}
+.popup-actions button{width:100%;margin-top:0}
+.popup-vote{border:1px solid #c9dce9;border-radius:9px;background:#fff;color:#24506a;padding:9px;font:inherit;font-size:10px;font-weight:750;cursor:pointer}
+.popup-vote:hover{background:#eef7fd}
+.history-card{cursor:pointer;transition:transform .14s ease,box-shadow .14s ease}
+.history-card:hover,.history-card:focus-visible{transform:translateY(-1px);box-shadow:0 10px 25px rgba(18,54,78,.1);outline:none}
