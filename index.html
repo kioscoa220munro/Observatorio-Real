@@ -32,7 +32,7 @@
     <div id="point-card" class="point-card hidden">
       <div><strong>Punto seleccionado</strong><button id="clear-point" type="button">×</button></div>
       <span id="address"></span><span id="place"></span><span id="coords"></span>
-      <button id="save-point" class="save-button" type="button">Guardar punto</button>
+      <button id="save-point" class="save-button" type="button">Guardar punto</button><button id="contribute-point" class="save-button secondary-save hidden" type="button">Aportar datos a esta alerta</button>
     </div>
     <div id="category-card" class="category-card hidden">
       <div class="card-heading"><strong>¿Qué vas a exponer?</strong><button id="close-category" type="button">×</button></div>
@@ -82,7 +82,7 @@
         type:'Feature',
         geometry:{type:'Point',coordinates:[Number(p.lng),Number(p.lat)]},
         properties:{
-          id:p.id,category:p.category||'',categoryName:p.categoryName||'Sin categoría',
+          id:p.id,category:p.category||'',categoryName:p.categoryName||'Sin categoría',votes:Number(p.votes||0),dataCount:Number(p.dataCount||0),
           subtype:p.subtype||'Sin especificar',condition:p.condition||'',
           status:p.status||'activo',address:p.address||''
         }
@@ -101,19 +101,18 @@
     const resolved=group.filter(p=>p.status==='resuelto').length;
     const catKey=group.find(p=>p.categoryName===mainCat)?.category||'transito';
     const rows=Object.entries(bySubtype).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([n,v])=>'<div class="popup-row"><span>'+n+'</span><b>'+fmt(v)+'</b></div>').join('');
-    const html='<div class="dashboard-popup-inner">'+
+    const votes=group.reduce((n,p)=>n+Number(p.votes||0),0); const dataCount=group.reduce((n,p)=>n+Number(p.dataCount||0),0); const ids=group.map(p=>p.id).filter(Boolean); const html='<div class="dashboard-popup-inner" data-ids="'+ids.join(',')+'">'+
       '<div class="popup-kicker">DATOS DEL TERRITORIO</div>'+
       '<h3><span class="popup-dot" style="background:'+ (colors[catKey]||'#258bd6') +'"></span>'+mainCat+'</h3>'+
       '<div class="popup-total">'+fmt(group.length)+' <small>reportes</small></div>'+
-      '<div class="popup-stats"><span><b>'+fmt(active)+'</b> activos</span><span><b>'+fmt(resolved)+'</b> resueltos</span></div>'+
+      '<div class="popup-stats"><span><b>'+fmt(active)+'</b> activos</span><span><b>'+fmt(resolved)+'</b> resueltos</span></div><div class="popup-stats"><span><b id="popup-votes">'+fmt(votes)+'</b> votos</span><span><b>'+fmt(dataCount)+'</b> datos aportados</span></div>'+
       '<div class="popup-subtypes">'+rows+'</div>'+
-      '<button type="button" class="popup-explore" id="dashboard-explore">Ver estos reportes en el mapa</button>'+
+      '<div class="popup-actions"><button type="button" class="popup-vote" id="dashboard-vote">+ Votar</button><button type="button" class="popup-explore" id="dashboard-explore">Aportar datos a esta alerta</button></div>'+
       '</div>';
     const popup=new maplibregl.Popup({closeButton:true,closeOnClick:false,maxWidth:'300px'}).setLngLat(coords).setHTML(html).addTo(dashMap);
     popup.once('open',()=>{
-      document.getElementById('dashboard-explore')?.addEventListener('click',()=>{
-        popup.remove();
-        document.querySelector('#mapa')?.scrollIntoView({behavior:'smooth'});
+      document.getElementById('dashboard-vote')?.addEventListener('click',()=>{ const ps=points(); ids.forEach(id=>{const p=ps.find(x=>x.id===id);if(p)p.votes=Number(p.votes||0)+1}); localStorage.setItem(storage,JSON.stringify(ps)); update(); const el=document.getElementById('popup-votes'); if(el)el.textContent=fmt(ps.filter(p=>ids.includes(p.id)).reduce((n,p)=>n+Number(p.votes||0),0)); }); document.getElementById('dashboard-explore')?.addEventListener('click',()=>{
+        const target=group[0]; popup.remove(); if(target?.id) openExistingPoint(target.id); else document.querySelector('#mapa')?.scrollIntoView({behavior:'smooth'});
       });
     });
   }
