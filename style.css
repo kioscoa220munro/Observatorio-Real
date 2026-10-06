@@ -29,3 +29,6 @@
 .popup-vote:hover{background:#eef7fd}
 .history-card{cursor:pointer;transition:transform .14s ease,box-shadow .14s ease}
 .history-card:hover,.history-card:focus-visible{transform:translateY(-1px);box-shadow:0 10px 25px rgba(18,54,78,.1);outline:none}
+
+/* OR_VOTE_STYLE_V1 */
+.popup-vote{background:#fff!important;color:#b84a4a!important;border-color:#e0b0b0!important}.popup-vote.vote-voted{background:#36a36b!important;color:#fff!important;border-color:#36a36b!important}
