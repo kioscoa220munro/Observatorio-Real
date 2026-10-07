@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Observatorio Real — NAZER</title>
+<title>NAZER — Observatorio Real</title>
 <link href="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.css" rel="stylesheet">
 <link rel="stylesheet" href="./style.css">
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="#mapa" id="brand-toggle" aria-expanded="false"><span class="cloud">☁</span><span><strong>Observatorio Real</strong><small id="nazer-label">· NAZER</small></span><em id="nazer-expanded">Núcleo Administrativo Zonal y Estratégico Regional</em></a>
+  <a class="brand" href="#mapa" id="brand-toggle" aria-expanded="false"><span class="cloud">☁</span><span class="brand-copy"><strong class="nazer-name">NAZER</strong><small id="nazer-label">Observatorio Real</small></span><em id="nazer-expanded">Núcleo Administrativo Zonal y Estratégico Regional</em></a>
   <nav class="main-nav" aria-label="Navegación principal">
     <a class="active" href="#mapa">Mapa</a>
     <a href="#dashboard">Dashboard</a>
@@ -20,7 +20,7 @@
 <main id="inicio">
   <section class="map-shell" id="mapa">
     <div class="map-toolbar">
-      <div><span class="eyebrow">NAZER · MAPA REAL</span><h1>Observá el territorio</h1></div>
+      <div><span class="eyebrow">NAZER · OBSERVATORIO REAL</span><h1>Observá el territorio</h1></div>
       <div class="toolbar-actions">
         <label class="search-box"><span aria-hidden="true">⌕</span><input id="address-search" type="search" placeholder="Buscar dirección, calle o lugar…" autocomplete="off"><button id="search-button" type="button">Buscar</button></label>
         <button id="locate" class="tool-button secondary-tool" type="button">Mi ubicación</button>
@@ -32,7 +32,7 @@
     <div id="point-card" class="point-card hidden">
       <div><strong>Punto seleccionado</strong><button id="clear-point" type="button">×</button></div>
       <span id="address"></span><span id="place"></span><span id="coords"></span>
-      <button id="save-point" class="save-button" type="button">Guardar punto</button><button id="contribute-point" class="save-button secondary-save hidden" type="button">Aportar datos a esta alerta</button>
+      <button id="save-point" class="save-button" type="button">Guardar punto</button><div id="point-confidence" class="point-confidence hidden"></div><button id="confirm-point" class="save-button secondary-save hidden" type="button">Corroborar este dato</button><button id="contribute-point" class="save-button secondary-save hidden" type="button">Aportar datos a esta alerta</button>
     </div>
     <div id="category-card" class="category-card hidden">
       <div class="card-heading"><strong>¿Qué vas a exponer?</strong><button id="close-category" type="button">×</button></div>
@@ -43,7 +43,7 @@
 
   <section id="dashboard" class="dashboard-section">
     <div class="dashboard-head">
-      <div><span class="eyebrow">OBSERVATORIO EN TIEMPO REAL</span><h2>El territorio habla</h2><p>Los datos aparecen sobre el mapa. Tocá un globo para explorar su categoría y magnitud.</p></div>
+      <div><span class="eyebrow">NAZER · DATOS DEL TERRITORIO</span><h2>El territorio habla</h2><p>Los datos aparecen sobre el mapa. Tocá un globo para explorar su categoría y magnitud.</p></div>
       <div class="dashboard-legend" id="dashboard-legend"></div>
     </div>
     <div class="dashboard-map-wrap">
@@ -57,7 +57,7 @@
 
   <section id="historico" class="data-section history-section">
     <div class="section-title"><span class="eyebrow">HISTÓRICO</span><h2>Todos los puntos desde su origen</h2></div>
-    <p class="section-note">El histórico conserva la línea de tiempo completa de cada punto, incluso cuando se soluciona.</p>
+    <p class="section-note">El histórico conserva la línea de tiempo completa de cada punto, incluso cuando se soluciona. La confiabilidad aumenta con corroboraciones y evidencia.</p>
     <div id="history-list" class="history-list"><div class="empty-state">Todavía no hay puntos publicados.</div></div>
   </section>
 </main>
