@@ -1,14 +1,29 @@
-# Observatorio Real
+# NAZER — Observatorio Real
 
-Portal de datos abiertos y verificables.
+**Núcleo Administrativo Zonal y Estratégico Regional**
 
-## Alcance inicial
-- Área inicial: Vicente López, Buenos Aires, Argentina.
-- Geografía y datos abiertos con fuente y fecha.
-- Arquitectura preparada para ampliar cobertura a Argentina y otras regiones.
+Plataforma territorial de datos ciudadanos reales, trazables, colaborativos y abiertos.
 
-## Publicación
-El proyecto es independiente de A220. GitHub contiene el código y Vercel puede utilizar este repositorio como fuente de despliegue.
+## Modelo funcional
 
-## Principio
-No presentar datos como reales sin identificar su fuente y cobertura.
+- Mapa como pantalla principal.
+- Diez categorías estructuradas, sin un cajón genérico “otros”.
+- Flujo: ubicación → categoría → subtipo → condición → descripción → propuesta → evidencia.
+- Confiabilidad progresiva: **dato informado → dato corroborado → dato respaldado**.
+- Otros usuarios pueden corroborar y aportar datos o pruebas sin alterar el registro original.
+- Clústeres muestran concentración de reportes, votos, aportes y estado.
+- Histórico conserva origen, cambios, aportes y evolución.
+- Dashboard para analizar distribución y concentración territorial.
+- Inicio en Vicente López, preparado para ampliar a Argentina y otras regiones.
+
+## Identidad
+
+**NAZER** es el nombre principal y aparece en rojo.
+
+**Observatorio Real** es el subtítulo.
+
+**Núcleo Administrativo Zonal y Estratégico Regional** es la expansión de las siglas.
+
+Principio: **datos reales, trazables y abiertos. La confiabilidad de la información importa más que exponer públicamente la identidad real del aportante.**
+
+Este proyecto es independiente de A220 y de RuView.
