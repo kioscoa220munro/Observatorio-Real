@@ -3,11 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="NAZER · Observatorio Real: datos territoriales reales, trazables y abiertos. Reportá, corroborá y consultá problemas del territorio.">
+<meta name="theme-color" content="#07111b">
+<meta name="robots" content="index,follow">
+<meta property="og:title" content="NAZER — Observatorio Real">
+<meta property="og:description" content="Datos reales, trazables y abiertos del territorio.">
+<meta property="og:type" content="website">
 <title>NAZER — Observatorio Real</title>
 <link href="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.css" rel="stylesheet">
 <link rel="stylesheet" href="./style.css">
 </head>
 <body>
+<a class="skip-link" href="#mapa">Ir al mapa</a>
+<div id="global-status" class="sr-live" aria-live="polite" aria-atomic="true"></div>
 <header class="topbar">
   <a class="brand" href="#mapa" id="brand-toggle" aria-expanded="false"><span class="cloud">☁</span><span class="brand-copy"><strong class="nazer-name">NAZER</strong><small id="nazer-label">Observatorio Real</small></span><em id="nazer-expanded">Núcleo Administrativo Zonal y Estratégico Regional</em></a>
   <nav class="main-nav" aria-label="Navegación principal">
@@ -15,9 +23,10 @@
     <a href="#dashboard">Dashboard</a>
     <a href="#historico">Histórico</a>
   </nav>
-  <span class="status"><i></i>Mapa activo</span>
+  <span class="status" id="app-status"><i></i><span>Preparando mapa…</span></span>
 </header>
 <main id="inicio">
+<section class="hero-intro" aria-labelledby="intro-title"><div><span class="eyebrow">DATOS REALES · TRAZABLES · ABIERTOS</span><h2 id="intro-title">Una lectura viva del territorio</h2><p>Ubicá un problema, clasificá el dato y ayudá a construir evidencia colectiva. La identidad pública puede ser un alias; la trazabilidad del dato queda registrada.</p></div><div class="trust-flow" aria-label="Niveles de confiabilidad"><span>Dato informado</span><b>→</b><span>Dato corroborado</span><b>→</b><span>Dato respaldado</span></div></section>
   <section class="map-shell" id="mapa">
     <div class="map-toolbar">
       <div><span class="eyebrow">NAZER · OBSERVATORIO REAL</span><h1>Observá el territorio</h1></div>
@@ -27,8 +36,8 @@
       </div>
     </div>
     <div id="search-results" class="search-results hidden"></div>
-    <div id="map" aria-label="Mapa interactivo"></div>
-    <div id="category-filter" class="category-filter" aria-label="Filtrar reportes"></div><div class="map-help">Tocá el mapa para marcar un punto. Los reportes cercanos se agrupan automáticamente.</div>
+    <div class="map-loading" id="map-loading" role="status"><span class="spinner"></span><span>Cargando mapa…</span></div><div id="map" role="application" aria-label="Mapa interactivo del territorio" tabindex="0"></div>
+    <div id="category-filter" class="category-filter" aria-label="Filtrar reportes"></div><div class="map-help" id="map-help">Tocá o hacé clic en el mapa para marcar un punto. Los reportes cercanos se agrupan automáticamente. Usá el teclado para navegar por los controles.</div>
     <div id="point-card" class="point-card hidden">
       <div><strong>Punto seleccionado</strong><button id="clear-point" type="button">×</button></div>
       <span id="address"></span><span id="place"></span><span id="coords"></span>
@@ -41,12 +50,12 @@
     </div>
   </section>
 
-  <section id="dashboard" class="dashboard-section">
+  <section id="dashboard" class="dashboard-section" aria-labelledby="dashboard-title">
     <div class="dashboard-head">
-      <div><span class="eyebrow">NAZER · DATOS DEL TERRITORIO</span><h2>El territorio habla</h2><p>Los datos aparecen sobre el mapa. Tocá un globo para explorar su categoría y magnitud.</p></div>
-      <div class="dashboard-legend" id="dashboard-legend"></div>
+      <div><span class="eyebrow">NAZER · DATOS DEL TERRITORIO</span><h2 id="dashboard-title">El territorio habla</h2><p>Los datos aparecen sobre el mapa. Tocá un globo para explorar su categoría y magnitud.</p></div>
+      <div class="dashboard-legend" id="dashboard-legend" aria-label="Resumen por categoría"></div>
     </div>
-    <div class="dashboard-map-wrap">
+    <div class="kpi-grid" id="dashboard-kpis" aria-label="Indicadores del territorio"></div><div class="dashboard-map-wrap">
       <div id="dashboard-map" aria-label="Mapa gráfico del dashboard"></div>
       <div class="dashboard-overlay" aria-hidden="true">
         <span class="live-dot"></span> DATOS ABIERTOS · ACTUALIZACIÓN AUTOMÁTICA
@@ -58,10 +67,11 @@
   <section id="historico" class="data-section history-section">
     <div class="section-title"><span class="eyebrow">HISTÓRICO</span><h2>Todos los puntos desde su origen</h2></div>
     <p class="section-note">El histórico conserva la línea de tiempo completa de cada punto, incluso cuando se soluciona. La confiabilidad aumenta con corroboraciones y evidencia.</p>
-    <div id="history-list" class="history-list"><div class="empty-state">Todavía no hay puntos publicados.</div></div>
+    <div id="history-list" class="history-list" aria-live="polite"><div class="empty-state">Todavía no hay puntos publicados.</div></div>
   </section>
 </main>
 <footer>Observatorio Real · datos reales, trazables y abiertos</footer>
+<noscript><div class="noscript-warning">NAZER necesita JavaScript para mostrar el mapa, los datos y las herramientas de participación.</div></noscript>
 <script src="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.js"></script>
 <script src="./app.js"></script>
 <script>
