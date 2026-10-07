@@ -32,3 +32,6 @@
 
 /* OR_VOTE_STYLE_V1 */
 .popup-vote{background:#fff!important;color:#b84a4a!important;border-color:#e0b0b0!important}.popup-vote.vote-voted{background:#36a36b!important;color:#fff!important;border-color:#36a36b!important}
+
+/* NAZER identity + trust layer */
+.nazer-name{color:#d71920!important;letter-spacing:.08em;font-weight:900}.brand-copy{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:1px!important}.brand-copy small{color:#537084!important;letter-spacing:.08em!important;margin-left:0!important;font-size:9px!important}.point-confidence{display:flex;flex-direction:column;gap:2px;margin:8px 0;padding:8px 10px;border:1px solid #dbe8f1;border-radius:10px;background:#f7fbfd;color:#527084;font-size:10px}.point-confidence strong{color:#173247;font-size:11px}.confidence-pill{justify-self:start;background:#f3f8fb;color:#527084;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:750;margin:3px 0}.point-card #confirm-point{border-color:#43a866;color:#16803b;background:#f7fff9}
