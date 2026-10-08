@@ -1,0 +1,4 @@
+'use client';
+import {Canvas,useFrame} from '@react-three/fiber';import {Float,Line} from '@react-three/drei';import {useRef} from 'react';import * as THREE from 'three';
+function Scene(){const g=useRef<THREE.Group>(null);useFrame((_,d)=>{if(g.current)g.current.rotation.y+=d*.08});return <group ref={g}><Float speed={1.2} rotationIntensity={.12} floatIntensity={.3}><mesh><icosahedronGeometry args={[1.25,1]}/><meshBasicMaterial wireframe color="#23b6c9" transparent opacity={.28}/></mesh><Line points={[[-1.5,-.8,0],[0,1.4,.2],[1.4,-.6,0],[-1.5,-.8,0]]} color="#35a66f" transparent opacity={.35} lineWidth={1}/></Float></group>}
+export function ThreeLayers(){return <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-70"><Canvas camera={{position:[0,0,4],fov:45}} dpr={[1,1.3]} gl={{alpha:true,antialias:false}}><Scene/></Canvas></div>}
