@@ -1,0 +1,7 @@
+'use client';
+import { AnimatePresence, motion } from 'framer-motion';
+import { RotateCw } from 'lucide-react';
+import { useAppStore } from '@/lib/store';
+import type { ViewMode } from '@/lib/types';
+const variants={enter:{rotateZ:-720,scale:.2,filter:'blur(12px)',opacity:0},center:{rotateZ:0,scale:1,filter:'blur(0px)',opacity:1},exit:{rotateZ:720,scale:0,filter:'blur(12px)',opacity:0}};
+export function VortexSwitcher({views}:{views:{id:ViewMode;label:string}[]}){const view=useAppStore(s=>s.view),setView=useAppStore(s=>s.setView);const next=views[(views.findIndex(v=>v.id===view)+1)%views.length];return <div className="pointer-events-none absolute inset-0 z-20"><AnimatePresence mode="wait"><motion.div key={view} variants={variants} initial="enter" animate="center" exit="exit" transition={{duration:.7,ease:[.16,1,.3,1]}} className="absolute inset-0"/></AnimatePresence><button aria-label={'Cambiar vista a '+next.label} onClick={()=>setView(next.id)} className="pointer-events-auto absolute bottom-5 right-5 grid h-14 w-14 place-items-center rounded-full border border-white/30 bg-ink/90 text-white shadow-2xl backdrop-blur"><RotateCw className="h-6 w-6 transition-transform duration-700 hover:rotate-180"/></button></div>}
