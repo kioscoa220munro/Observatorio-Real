@@ -1,0 +1,1 @@
+import './globals.css';import type {Metadata} from 'next';export const metadata:Metadata={title:'Nazer · Observatorio Real',description:'Datos ciudadanos geolocalizados, trazables y abiertos.'};export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="es"><body>{children}</body></html>}
