@@ -15,6 +15,9 @@ drop policy if exists corroborations_read on public.corroborations;create policy
 drop policy if exists corroborations_insert on public.corroborations;create policy corroborations_insert on public.corroborations for insert with check(auth.role()='authenticated' and auth.uid()=user_id);
 create or replace function public.corroboration_guard() returns trigger language plpgsql security definer set search_path=public as $$ begin if exists(select 1 from corroborations where report_id=new.report_id and user_id=new.user_id) then raise exception 'Ya corroboraste este reporte'; end if; return new; end $$;
 drop trigger if exists trg_corroboration_guard on public.corroborations;create trigger trg_corroboration_guard before insert on public.corroborations for each row execute function public.corroboration_guard();
+grant select on public.reports_geo to anon,authenticated;
+grant execute on function public.create_report(double precision,double precision,text,smallint,text,text[]) to anon,authenticated;
+grant insert on public.corroborations to authenticated;
 insert into storage.buckets(id,name,public) values('evidence','evidence',true) on conflict(id) do nothing;
 drop policy if exists evidence_public_read on storage.objects;create policy evidence_public_read on storage.objects for select using(bucket_id='evidence');
 drop policy if exists evidence_auth_upload on storage.objects;create policy evidence_auth_upload on storage.objects for insert to authenticated with check(bucket_id='evidence' and (storage.foldername(name))[1]=auth.uid()::text);
