@@ -1,29 +1,34 @@
-# NAZER — Observatorio Real
+# Nazer · Observatorio Real
 
-**Núcleo Administrativo Zonal y Estratégico Regional**
+Plataforma ciudadana geolocalizada construida con Next.js 14, TypeScript, Tailwind, shadcn/ui, Framer Motion, React Three Fiber/drei, MapLibre GL JS, Zustand y Supabase/PostGIS.
 
-Plataforma territorial de datos ciudadanos reales, trazables, colaborativos y abiertos.
+## Producción
 
-## Modelo funcional
+1. En Supabase habilitá Anonymous Sign-Ins en Authentication > Sign In / Providers.
+2. Ejecutá supabase/migrations/001_observatorio_real.sql.
+3. Configurá NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en Vercel.
+4. Desplegá la rama main.
 
-- Mapa como pantalla principal.
-- Diez categorías estructuradas, sin un cajón genérico “otros”.
-- Flujo: ubicación → categoría → subtipo → condición → descripción → propuesta → evidencia.
-- Confiabilidad progresiva: **dato informado → dato corroborado → dato respaldado**.
-- Otros usuarios pueden corroborar y aportar datos o pruebas sin alterar el registro original.
-- Clústeres muestran concentración de reportes, votos, aportes y estado.
-- Histórico conserva origen, cambios, aportes y evolución.
-- Dashboard para analizar distribución y concentración territorial.
-- Inicio en Vicente López, preparado para ampliar a Argentina y otras regiones.
+Sin las variables de Supabase, la interfaz funciona en modo demo con datos de Munro para poder probar mapa, vistas, histórico y formulario.
 
-## Identidad
+## Mapa
 
-**NAZER** es el nombre principal y aparece en rojo.
+MapLibre usa clustering GeoJSON nativo con radio 200 para la agrupación solicitada. OpenFreeMap Liberty aporta los tiles vectoriales.
 
-**Observatorio Real** es el subtítulo.
+## Vistas
 
-**Núcleo Administrativo Zonal y Estratégico Regional** es la expansión de las siglas.
+Puntos: clusters y marcadores.
+Calor: densidad ponderada por magnitud.
+Red: conexiones entre reportes corroborados/verificados próximos.
 
-Principio: **datos reales, trazables y abiertos. La confiabilidad de la información importa más que exponer públicamente la identidad real del aportante.**
+## VortexSwitcher
 
-Este proyecto es independiente de A220 y de RuView.
+Componente reutilizable de Framer Motion con rotateZ 720/-720, scale, blur, opacity, perspective 1200 y duración 700 ms.
+
+## Evidencias
+
+Hasta 3 archivos por reporte en Supabase Storage.
+
+## Verificación
+
+Un reporte pasa a verificado al llegar a 3 corroboraciones. La clave primaria report_id + user_id limita a una corroboración por usuario anónimo.
