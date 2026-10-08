@@ -1,0 +1,3 @@
+'use client';
+import {motion,useScroll,useTransform} from 'framer-motion';import {useRef} from 'react';
+export function DepthPanel({children,className='',depth=120}:{children:React.ReactNode;className?:string;depth?:number}){const ref=useRef<HTMLDivElement>(null);const {scrollYProgress}=useScroll({target:ref,offset:['start end','end start']});const z=useTransform(scrollYProgress,[0,.5,1],[0,-depth,0]);return <motion.section ref={ref} style={{translateZ:z}} className={'layer-panel relative '+className}>{children}</motion.section>}
