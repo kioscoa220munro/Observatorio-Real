@@ -57,7 +57,7 @@ export function MapCanvas() {
         sources: {
           osm: {
             type: 'raster',
-            tiles: ['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'],
+            tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
             tileSize: 256,
             attribution: '© OpenStreetMap contributors © CARTO',
           },
@@ -78,7 +78,7 @@ export function MapCanvas() {
       sources: {
         osm: {
           type: 'raster',
-          tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
           tileSize: 256,
           attribution: '© OpenStreetMap contributors',
         },
@@ -237,13 +237,13 @@ export function MapCanvas() {
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.45 }}
-      className="relative h-[min(72vh,720px)] min-h-[520px] overflow-hidden rounded-[28px] border border-white/60 bg-slate-200 shadow-2xl"
+      className="relative h-[min(76vh,860px)] min-h-[560px] overflow-hidden rounded-none border-0 bg-[#09111c] shadow-none sm:rounded-b-[18px]"
     >
       <div ref={ref} className="absolute inset-0" />
-      <div className="pointer-events-none absolute left-4 top-4 rounded-2xl border border-white/60 bg-white/90 px-3 py-2 text-[11px] font-bold tracking-[.12em] text-slate-700 shadow-sm backdrop-blur">
+      <div className="pointer-events-none absolute left-4 top-4 max-w-[75%] rounded-xl border border-cyan-200/20 bg-[#07111de8] px-3 py-2 text-[10px] font-bold tracking-[.08em] text-cyan-100 shadow-lg backdrop-blur sm:text-[11px]">
         NAZER · NÚCLEO ADMINISTRATIVO ZONAL Y ESTRATÉGICO REGIONAL
       </div>
-      <div className="pointer-events-none absolute bottom-4 left-4 max-w-[80%] rounded-2xl bg-slate-950/85 px-3 py-2 text-xs text-white shadow-lg">
+      <div className="pointer-events-none absolute bottom-4 left-4 max-w-[80%] rounded-xl border border-white/10 bg-[#07111de8] px-3 py-2 text-xs text-slate-200 shadow-lg backdrop-blur">
         {mapStatus}. Tocá un punto para abrir su histórico; tocá el mapa para fijar ubicación.
       </div>
     </motion.div>
