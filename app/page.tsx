@@ -20,14 +20,15 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="dark-app min-h-screen overflow-x-clip">
+    <main className="dark-app nazer-reveal min-h-screen overflow-x-clip">
       <header className="nazer-header fixed inset-x-0 top-0 z-40">
         <div className="mx-auto flex h-[76px] max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-7">
           <a href="#inicio" className="flex min-w-0 items-center gap-3">
             <div className="or-mark grid h-11 w-11 shrink-0 place-items-center rounded-2xl text-sm font-black">OR</div>
             <div className="min-w-0">
-              <div className="truncate text-sm font-black tracking-tight text-white sm:text-base">Observatorio Real <span className="text-slate-500">/</span> <span className="nazer-red">NAZER</span></div>
-              <div className="hidden text-[9px] font-bold tracking-[.13em] text-slate-400 sm:block">NÚCLEO ADMINISTRATIVO ZONAL Y ESTRATÉGICO REGIONAL</div>
+              <div className="nazer-wordmark truncate text-lg font-black tracking-[.12em] sm:text-xl"><span className="nazer-red">NAZER</span></div>
+              <div className="nazer-subtitle text-xs font-bold sm:text-sm">Observatorio Real</div>
+              <div className="nazer-expansion hidden text-[9px] font-semibold tracking-[.08em] sm:block">Núcleo Administrativo Zonal y Estratégico Regional</div>
             </div>
           </a>
           <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[.04] px-4 py-2 text-[11px] font-semibold text-slate-300 md:flex"><span className="live-dot" /> DATOS REALES · TRAZABLES · ABIERTOS</div>
