@@ -55,9 +55,26 @@ export function MapCanvas() {
       attributionControl: { compact: true },
     });
     mapRef.current = map;
+
+    let baseLoaded = false;
+    let fallbackTried = false;
+    const fallbackStyle: maplibregl.StyleSpecification = {
+      version: 8,
+      sources: {
+        osm: {
+          type: 'raster',
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors',
+        },
+      },
+      layers: [{ id: 'osm-base', type: 'raster', source: 'osm' }],
+    };
+
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'bottom-right');
 
     map.on('load', () => {
+      baseLoaded = true;
       if (!map.getSource('reports')) {
         map.addSource('reports', {
           type: 'geojson',
@@ -148,7 +165,14 @@ export function MapCanvas() {
 
     map.on('error', (event) => {
       console.error('Error del mapa/base cartográfica:', event.error || event);
-      setMapStatus('Error cargando el mapa · reintentá recargar');
+
+      // Una tesela suelta puede fallar aunque el mapa ya esté funcionando.
+      // Solo cambiamos de base si la cartografía inicial no llegó a cargar.
+      if (!baseLoaded && !fallbackTried) {
+        fallbackTried = true;
+        setMapStatus('Probando una base cartográfica alternativa…');
+        map.setStyle(fallbackStyle);
+      }
     });
 
     return () => {
