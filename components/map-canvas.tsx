@@ -52,7 +52,7 @@ export function MapCanvas() {
       center: [-58.518, -34.535],
       zoom: 13.7,
       pitch: 38,
-      attributionControl: true,
+      attributionControl: { compact: true },
     });
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'bottom-right');
