@@ -53,9 +53,9 @@ export function MapCanvas() {
         sources: {
           osm: {
             type: 'raster',
-            tiles: ['https://a.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png'],
+            tiles: ['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'],
             tileSize: 256,
-            attribution: '© OpenStreetMap contributors',
+            attribution: '© OpenStreetMap contributors © CARTO',
           },
         },
         layers: [{ id: 'osm-base', type: 'raster', source: 'osm' }],
@@ -74,7 +74,7 @@ export function MapCanvas() {
       sources: {
         osm: {
           type: 'raster',
-          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
           tileSize: 256,
           attribution: '© OpenStreetMap contributors',
         },
@@ -179,7 +179,7 @@ export function MapCanvas() {
 
       // Una tesela suelta puede fallar aunque el mapa ya esté funcionando.
       // Solo cambiamos de base si la cartografía inicial no llegó a cargar.
-      if (!baseLoaded && !fallbackTried) {
+      if (!fallbackTried && (!baseLoaded || (event as any)?.sourceId === 'osm')) {
         fallbackTried = true;
         setMapStatus('Probando una base cartográfica alternativa…');
         map.setStyle(fallbackStyle);
