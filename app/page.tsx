@@ -1,96 +1,107 @@
 'use client';
 
 import { useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowDown, Database, MapPinned, ShieldCheck, Activity, Share2 } from 'lucide-react';
-import { DepthPanel } from '@/components/depth-panel';
-import { ThreeLayers } from '@/components/three-layers';
-import { VortexSwitcher } from '@/components/vortex-switcher';
+import { Activity, ArrowDownRight, Database, MapPin, PlusCircle, Radio, Search, ShieldCheck, Share2 } from 'lucide-react';
 import { MapCanvas } from '@/components/map-canvas';
-import { ReportSheet } from '@/components/report-sheet';
+import { VortexSwitcher } from '@/components/vortex-switcher';
 import { ReportForm } from '@/components/report-form';
 import { Timeline } from '@/components/timeline';
+import { ReportSheet } from '@/components/report-sheet';
+import { useAppStore } from '@/lib/store';
 
 export default function Home() {
+  const reports = useAppStore((state) => state.reports);
   useEffect(() => {
     (async () => {
       const { getSupabase } = await import('@/lib/supabase-browser');
       const supabase = getSupabase();
-      if (supabase && !(await supabase.auth.getUser()).data.user) {
-        await supabase.auth.signInAnonymously();
-      }
+      if (supabase && !(await supabase.auth.getUser()).data.user) await supabase.auth.signInAnonymously();
     })();
   }, []);
 
   return (
-    <main className="overflow-x-clip bg-[#f4f8fa]">
-      <header className="fixed left-0 right-0 top-0 z-40 border-b border-white/50 bg-white/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-ink text-white"><span className="font-black">OR</span></div>
-            <div>
-              <div className="text-sm font-black">Observatorio Real <span className="text-slate-400">·</span> <span className="text-signal">NAZER</span></div>
-              <div className="text-[8px] font-bold tracking-[.16em] text-slate-400">NÚCLEO ADMINISTRATIVO ZONAL Y ESTRATÉGICO REGIONAL</div>
+    <main className="dark-app min-h-screen overflow-x-clip">
+      <header className="nazer-header fixed inset-x-0 top-0 z-40">
+        <div className="mx-auto flex h-[76px] max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-7">
+          <a href="#inicio" className="flex min-w-0 items-center gap-3">
+            <div className="or-mark grid h-11 w-11 shrink-0 place-items-center rounded-2xl text-sm font-black">OR</div>
+            <div className="min-w-0">
+              <div className="truncate text-sm font-black tracking-tight text-white sm:text-base">Observatorio Real <span className="text-slate-500">/</span> <span className="nazer-red">NAZER</span></div>
+              <div className="hidden text-[9px] font-bold tracking-[.13em] text-slate-400 sm:block">NÚCLEO ADMINISTRATIVO ZONAL Y ESTRATÉGICO REGIONAL</div>
             </div>
-          </div>
-          <div className="hidden items-center gap-2 text-xs font-semibold text-slate-500 sm:flex"><span className="h-2 w-2 rounded-full bg-volt" />Datos reales · trazables · abiertos</div>
+          </a>
+          <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[.04] px-4 py-2 text-[11px] font-semibold text-slate-300 md:flex"><span className="live-dot" /> DATOS REALES · TRAZABLES · ABIERTOS</div>
+          <nav className="flex shrink-0 items-center gap-2">
+            <a href="#mapa" className="nav-link hidden sm:inline-flex"><MapPin size={15}/> Mapa</a>
+            <a href="#publicar" className="nav-link"><PlusCircle size={15}/> <span className="hidden sm:inline">Reportar</span><span className="sm:hidden">+</span></a>
+          </nav>
         </div>
       </header>
 
-      <DepthPanel className="min-h-[88vh] pt-16">
-        <section className="relative mx-auto flex min-h-[82vh] max-w-6xl items-center overflow-hidden px-5 py-20">
-          <ThreeLayers />
-          <div className="relative z-10 max-w-3xl">
-            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-4 text-xs font-black tracking-[.25em] text-aqua">NAZER · NÚCLEO ADMINISTRATIVO ZONAL Y ESTRATÉGICO REGIONAL</motion.p>
-            <motion.h1 initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} className="text-5xl font-black leading-[.95] tracking-[-.04em] text-ink sm:text-7xl">La ciudad como <span className="text-signal">dato real.</span></motion.h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-600">Publicá eventos geolocalizados, sumá tu + a los hechos que conocés y construí una magnitud colectiva con datos de la comunidad.</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <a href="#mapa" className="rounded-2xl bg-ink px-5 py-3 text-sm font-bold text-white shadow-lg">Explorar mapa</a>
-              <a href="#publicar" className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-ink">Publicar evento</a>
-            </div>
-            <div className="mt-12 flex flex-wrap gap-5 text-xs font-bold text-slate-500">
-              <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-volt" />Confirmación comunitaria</span>
-              <span className="flex items-center gap-2"><Database className="h-4 w-4 text-aqua" />Datos trazables</span>
-              <span className="flex items-center gap-2"><Activity className="h-4 w-4 text-signal" />Magnitud automática</span>
-            </div>
-          </div>
-          <ArrowDown className="absolute bottom-8 left-1/2 h-5 w-5 -translate-x-1/2 animate-bounce text-slate-400" />
-        </section>
-      </DepthPanel>
-
-      <DepthPanel id="mapa" className="mx-auto max-w-6xl px-4 py-8" depth={180}>
-        <div className="mb-5 flex items-end justify-between gap-4">
+      <section id="inicio" className="dark-intro px-4 pb-5 pt-[100px] sm:px-7">
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-end justify-between gap-5">
           <div>
-            <p className="text-xs font-black tracking-[.2em] text-aqua">TERRITORIO</p>
-            <h2 className="text-3xl font-black tracking-tight">Un mapa, los eventos de todos</h2>
-            <p className="mt-1 max-w-xl text-sm text-slate-500">Explorá los puntos, la intensidad y las conexiones de los hechos registrados.</p>
+            <div className="eyebrow"><Radio size={13}/> OBSERVATORIO TERRITORIAL · VICENTE LÓPEZ</div>
+            <h1 className="mt-3 max-w-4xl text-3xl font-black leading-tight tracking-[-.04em] text-white sm:text-5xl">La realidad, <span className="text-cyan-300">punto por punto.</span></h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">Un mapa vivo de hechos ciudadanos, con ubicación, evidencia y seguimiento comunitario.</p>
           </div>
-          <MapPinned className="hidden h-10 w-10 text-aqua sm:block" />
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <div className="metric"><span>REPORTES</span><strong>{reports.length.toLocaleString('es-AR')}</strong></div>
+            <div className="metric"><span>VISTA</span><strong>EN VIVO</strong></div>
+            <div className="metric"><span>ÁREA</span><strong>VL / MUNRO</strong></div>
+          </div>
         </div>
-        <div className="vortex relative">
+      </section>
+
+      <section id="mapa" className="map-section px-3 sm:px-6">
+        <div className="map-toolbar mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3 px-4 py-3">
+          <div className="flex items-center gap-2 text-sm font-bold text-white"><span className="toolbar-icon"><MapPin size={16}/></span> Mapa territorial <span className="rounded-md border border-cyan-300/20 bg-cyan-300/10 px-2 py-1 text-[10px] font-bold text-cyan-200">CARTOGRAFÍA ACTIVA</span></div>
+          <div className="flex items-center gap-2 text-xs text-slate-400"><Search size={14}/> Tocá el mapa para elegir ubicación · tocá un punto para ver su histórico</div>
+        </div>
+        <div className="map-frame mx-auto max-w-[1600px]">
           <MapCanvas />
           <VortexSwitcher views={[{ id: 'points', label: 'Puntos' }, { id: 'heat', label: 'Calor' }, { id: 'network', label: 'Red' }]} />
         </div>
-      </DepthPanel>
-
-      <DepthPanel className="mx-auto max-w-6xl px-4 py-16" depth={140}>
-        <div className="mb-6">
-          <p className="text-xs font-black tracking-[.2em] text-aqua">HISTÓRICO</p>
-          <h2 className="text-3xl font-black">Eventos desde su origen</h2>
-          <p className="mt-2 text-sm text-slate-500">Abrí un evento para consultar su historial y sumarle tu +.</p>
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-2 px-2 py-3 text-[11px] text-slate-500">
+          <span className="flex items-center gap-2"><span className="live-dot"/> Mapa interactivo · reportes agrupados por zona</span>
+          <span>La información de demostración se identifica en el detalle del evento.</span>
         </div>
-        <Timeline />
-      </DepthPanel>
+      </section>
 
-      <DepthPanel id="publicar" className="mx-auto max-w-3xl px-4 py-16" depth={100}>
-        <ReportForm />
-      </DepthPanel>
-
-      <footer className="mx-auto max-w-6xl px-5 pb-12 pt-4 text-xs text-slate-400">
-        <div className="flex items-center justify-between gap-4">
-          <span>NAZER · Observatorio Real</span>
-          <span className="flex items-center gap-2"><Share2 className="h-3.5 w-3.5" />Compartible y trazable</span>
+      <section className="mx-auto grid max-w-[1600px] gap-5 px-4 py-10 sm:px-7 lg:grid-cols-[minmax(0,1fr)_minmax(320px,.75fr)]">
+        <div id="publicar" className="scroll-mt-28">
+          <div className="section-kicker"><PlusCircle size={14}/> PARTICIPACIÓN CIUDADANA</div>
+          <h2 className="mt-2 text-2xl font-black text-white sm:text-3xl">Registrar un hecho</h2>
+          <p className="mb-5 mt-2 max-w-xl text-sm leading-6 text-slate-400">Elegí un punto en el mapa, describí qué sucede y adjuntá evidencia si la tenés.</p>
+          <ReportForm />
         </div>
+        <aside className="side-info space-y-4">
+          <div className="info-card">
+            <div className="flex items-center gap-3"><div className="info-icon"><ShieldCheck size={19}/></div><div><h3 className="font-bold text-white">Confirmación comunitaria</h3><p className="mt-1 text-sm leading-5 text-slate-400">Los apoyos ayudan a medir la magnitud de cada evento.</p></div></div>
+          </div>
+          <div className="info-card">
+            <div className="flex items-center gap-3"><div className="info-icon"><Database size={19}/></div><div><h3 className="font-bold text-white">Datos trazables</h3><p className="mt-1 text-sm leading-5 text-slate-400">Cada reporte conserva su ubicación, fecha y estado.</p></div></div>
+          </div>
+          <div className="info-card">
+            <div className="flex items-center gap-3"><div className="info-icon"><Activity size={19}/></div><div><h3 className="font-bold text-white">Magnitud colectiva</h3><p className="mt-1 text-sm leading-5 text-slate-400">Los eventos pueden ganar relevancia a medida que la comunidad los confirma.</p></div></div>
+          </div>
+          <a href="#historico" className="history-jump flex items-center justify-between rounded-2xl p-4"><span><span className="block text-xs font-bold tracking-widest text-cyan-200">SEGUIMIENTO</span><span className="mt-1 block font-bold text-white">Ver histórico completo</span></span><ArrowDownRight size={20}/></a>
+        </aside>
+      </section>
+
+      <section id="historico" className="history-section scroll-mt-24 px-4 py-12 sm:px-7">
+        <div className="mx-auto max-w-[1600px]">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div><div className="section-kicker"><Activity size={14}/> REGISTRO CRONOLÓGICO</div><h2 className="mt-2 text-2xl font-black text-white sm:text-3xl">Histórico de eventos</h2><p className="mt-2 text-sm text-slate-400">Los reportes registrados, desde el más reciente hasta su origen.</p></div>
+            <span className="rounded-full border border-white/10 bg-white/[.04] px-3 py-2 text-xs font-bold text-slate-300">{reports.length} eventos visibles</span>
+          </div>
+          <div className="mt-6"><Timeline /></div>
+        </div>
+      </section>
+
+      <footer className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3 px-5 py-7 text-xs text-slate-500">
+        <span><strong className="nazer-red">NAZER</strong> · Núcleo Administrativo Zonal y Estratégico Regional</span>
+        <span className="flex items-center gap-2"><Share2 size={13}/> Datos reales · trazables · abiertos</span>
       </footer>
       <ReportSheet />
     </main>
