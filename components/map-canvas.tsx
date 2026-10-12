@@ -48,10 +48,21 @@ export function MapCanvas() {
 
     const map = new maplibregl.Map({
       container: ref.current,
-      style: 'https://tiles.openfreemap.org/styles/liberty',
+      style: {
+        version: 8,
+        sources: {
+          osm: {
+            type: 'raster',
+            tiles: ['https://a.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '© OpenStreetMap contributors',
+          },
+        },
+        layers: [{ id: 'osm-base', type: 'raster', source: 'osm' }],
+      },
       center: [-58.518, -34.535],
       zoom: 13.7,
-      pitch: 38,
+      pitch: 0,
       attributionControl: { compact: true },
     });
     mapRef.current = map;
