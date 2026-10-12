@@ -105,10 +105,20 @@ export function MapCanvas() {
           const feature = map.queryRenderedFeatures(event.point, { layers: ['clusters'] })[0];
           if (!feature) return;
           const source = map.getSource('reports') as maplibregl.GeoJSONSource;
-          source.getClusterExpansionZoom(Number(feature.properties?.cluster_id), (error, zoom) => {
-            const geometry = feature.geometry;
-            if (!error && geometry.type === 'Point') map.easeTo({ center: geometry.coordinates as [number, number], zoom });
-          });
+          const clusterId = Number(feature.properties?.cluster_id);
+          const geometry = feature.geometry;
+          if (geometry.type !== 'Point') return;
+
+          source.getClusterExpansionZoom(clusterId)
+            .then((zoom) => {
+              map.easeTo({
+                center: geometry.coordinates as [number, number],
+                zoom,
+              });
+            })
+            .catch((error) => {
+              console.error('Error al ampliar el grupo:', error);
+            });
         });
         map.on('click', 'points', (event) => {
           const feature = map.queryRenderedFeatures(event.point, { layers: ['points'] })[0];
