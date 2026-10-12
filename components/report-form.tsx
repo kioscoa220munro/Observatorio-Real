@@ -50,7 +50,7 @@ export function ReportForm() {
 
   async function submit() {
     if (!draft) {
-      setMessage('Elegí el lugar tocando el mapa o usá Mi ubicación.');
+      setMessage('Elegí un punto tocando el mapa o buscá una dirección.');
       return;
     }
     if (!description.trim()) {
