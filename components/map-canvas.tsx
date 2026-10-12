@@ -65,8 +65,8 @@ export function MapCanvas() {
         },
         layers: [{ id: 'osm-base', type: 'raster', source: 'osm' }],
       },
-      center: [-58.518, -34.535],
-      zoom: 13.7,
+      center: [-58.479, -34.526],
+      zoom: 13,
       minZoom: 3,
       maxZoom: 19,
       pitch: 0,
@@ -75,19 +75,6 @@ export function MapCanvas() {
     mapRef.current = map;
 
     let baseLoaded = false;
-    let fallbackTried = false;
-    const fallbackStyle: maplibregl.StyleSpecification = {
-      version: 8,
-      sources: {
-        osm: {
-          type: 'raster',
-          tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', 'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', 'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', 'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
-          tileSize: 256,
-          attribution: '© OpenStreetMap contributors © CARTO',
-        },
-      },
-      layers: [{ id: 'osm-base', type: 'raster', source: 'osm' }],
-    };
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'bottom-right');
 
@@ -183,14 +170,12 @@ export function MapCanvas() {
     });
 
     map.on('error', (event) => {
-      console.error('Error del mapa/base cartográfica:', event.error || event);
-
-      // Una tesela suelta puede fallar aunque el mapa ya esté funcionando.
-      // Solo cambiamos de base si la cartografía inicial no llegó a cargar.
-      if (!fallbackTried && (!baseLoaded || (event as any)?.sourceId === 'osm')) {
-        fallbackTried = true;
-        setMapStatus('Probando una base cartográfica alternativa…');
-        map.setStyle(fallbackStyle);
+      // No reiniciar el estilo por el fallo de una sola tesela:
+      // setStyle() elimina las fuentes/capas y los manejadores de reportes,
+      // y la supuesta alternativa usaba exactamente los mismos servidores.
+      console.error('[NAZER map] Error de MapLibre/tesela:', event.error || event);
+      if (!baseLoaded) {
+        setMapStatus('Cargando cartografía… hay errores de red; esperando respuesta del mapa.');
       }
     });
 
