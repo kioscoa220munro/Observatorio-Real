@@ -46,7 +46,11 @@ export function MapCanvas() {
   useEffect(() => {
     if (!ref.current || mapRef.current) return;
 
-    // MapLibre GL v6 loads its worker as a separate ESM asset. In Next.js 14,\n    // serve the worker and its shared module from public/ instead of a bundled chunk.\n    maplibregl.setWorkerUrl('/maplibre/maplibre-gl-worker.mjs');\n\n    const map = new maplibregl.Map({
+    // MapLibre GL v6 loads its worker as a separate ESM asset. In Next.js 14,
+    // serve the worker and its shared module from public/ instead of a bundled chunk.
+    maplibregl.setWorkerUrl('/maplibre/maplibre-gl-worker.mjs');
+
+    const map = new maplibregl.Map({
       container: ref.current,
       style: {
         version: 8,
