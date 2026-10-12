@@ -58,7 +58,7 @@ export function MapCanvas() {
         sources: {
           osm: {
             type: 'raster',
-            tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
+            tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', 'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', 'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', 'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
             tileSize: 256,
             attribution: '© OpenStreetMap contributors © CARTO',
           },
@@ -81,7 +81,7 @@ export function MapCanvas() {
       sources: {
         osm: {
           type: 'raster',
-          tiles: ['https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
+          tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', 'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', 'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', 'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
           tileSize: 256,
           attribution: '© OpenStreetMap contributors © CARTO',
         },
