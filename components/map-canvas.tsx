@@ -81,9 +81,9 @@ export function MapCanvas() {
       sources: {
         osm: {
           type: 'raster',
-          tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
+          tiles: ['https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
           tileSize: 256,
-          attribution: '© OpenStreetMap contributors',
+          attribution: '© OpenStreetMap contributors © CARTO',
         },
       },
       layers: [{ id: 'osm-base', type: 'raster', source: 'osm' }],
