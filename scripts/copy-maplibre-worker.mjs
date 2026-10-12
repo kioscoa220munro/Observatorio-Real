@@ -1,7 +1,10 @@
 import { copyFileSync, mkdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 
-const sourceDir = join(process.cwd(), 'node_modules', 'maplibre-gl', 'dist');
+const require = createRequire(import.meta.url);
+const packageJsonPath = require.resolve('maplibre-gl/package.json');
+const sourceDir = join(dirname(packageJsonPath), 'dist');
 const targetDir = join(process.cwd(), 'public', 'maplibre');
 
 mkdirSync(targetDir, { recursive: true });
