@@ -48,3 +48,13 @@ button,input,textarea,select{font:inherit}
 .dark-app input::placeholder,.dark-app textarea::placeholder{color:#667b92!important}
 .dark-app option{background:#0d1623;color:#eaf2ff}
 @media(max-width:640px){.metric{min-width:0;padding:10px}.metric strong{font-size:10px}.map-frame .maplibregl-ctrl-bottom-right{bottom:58px}.map-toolbar{align-items:flex-start}}
+
+.dark-app [class~="bg-white/90"]{background:rgba(13,22,35,.94)!important;color:#eaf2ff!important}
+.dark-app [class~="bg-white/80"]{background:rgba(13,22,35,.9)!important;color:#eaf2ff!important}
+.dark-app .bg-ink\/30{background:rgba(2,6,12,.78)!important}
+.dark-app .map-frame .maplibregl-canvas{outline:none}
+.dark-app .map-frame .maplibregl-ctrl-attrib-button{filter:invert(1)}
+.dark-app .history-section .text-slate-100{color:#f2f7ff!important}
+.dark-app .rounded-t-\[30px\].bg-white{background:#0c1522!important;color:#eaf2ff!important}
+.dark-app .rounded-t-\[30px\] .border-b{border-color:rgba(153,185,221,.16)!important}
+.dark-app .rounded-t-\[30px\] .font-semibold{color:#eaf2ff}
