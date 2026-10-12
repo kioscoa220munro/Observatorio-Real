@@ -18,8 +18,9 @@ const color = (category: string) => CATEGORIES.find((item) => item.id === catego
 export function MapCanvas() {
   const ref = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const draftMarkerRef = useRef<maplibregl.Marker | null>(null);
   const [mapStatus, setMapStatus] = useState('Preparando mapa…');
-  const { view, reports, setReports, setDraft, select } = useAppStore();
+  const { view, reports, draft, setReports, setDraft, select } = useAppStore();
 
   useEffect(() => {
     let alive = true;
@@ -66,6 +67,8 @@ export function MapCanvas() {
       },
       center: [-58.518, -34.535],
       zoom: 13.7,
+      minZoom: 3,
+      maxZoom: 19,
       pitch: 0,
       attributionControl: { compact: true },
     });
@@ -165,6 +168,7 @@ export function MapCanvas() {
         });
       }
       setMapStatus('Mapa activo · Vicente López');
+      map.resize();
       // Apply reports after the style and source are ready.
       const current = useAppStore.getState();
       const source = map.getSource('reports') as maplibregl.GeoJSONSource | undefined;
@@ -191,10 +195,29 @@ export function MapCanvas() {
     });
 
     return () => {
+      draftMarkerRef.current?.remove();
+      draftMarkerRef.current = null;
       map.remove();
       mapRef.current = null;
     };
   }, [select, setDraft]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !draft || !Number.isFinite(draft.lng) || !Number.isFinite(draft.lat)) return;
+    const place = () => {
+      if (!draftMarkerRef.current) {
+        const el = document.createElement('div');
+        el.setAttribute('aria-label', 'Ubicación elegida');
+        el.style.cssText = 'width:18px;height:18px;border-radius:50%;background:#ff334f;border:3px solid white;box-shadow:0 0 0 8px rgba(255,51,79,.2),0 0 24px rgba(255,51,79,.8);cursor:pointer;';
+        draftMarkerRef.current = new maplibregl.Marker({ element: el, anchor: 'center' });
+      }
+      draftMarkerRef.current.setLngLat([draft.lng, draft.lat]).addTo(map);
+      map.easeTo({ center: [draft.lng, draft.lat], zoom: Math.max(map.getZoom(), 15), duration: 650 });
+    };
+    if (map.isStyleLoaded()) place();
+    else map.once('load', place);
+  }, [draft, mapStatus]);
 
   useEffect(() => {
     const map = mapRef.current;
