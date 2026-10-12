@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 import { Search, Plus, UploadCloud } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { CATEGORIES } from '@/lib/types';
@@ -18,7 +19,7 @@ export function ReportForm() {
   const [address, setAddress] = useState('');
   const [searchingAddress, setSearchingAddress] = useState(false);
 
-  async function searchAddress(event: React.FormEvent<HTMLFormElement>) {
+  async function searchAddress(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const query = address.trim();
     if (!query) return;
