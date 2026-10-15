@@ -48,6 +48,39 @@
 .timeline-no-photo{font-size:13px;color:#8fa7bc;padding:9px 0}
 @media(max-width:800px){.dash-heading-actions{justify-content:flex-end}.dash-view-toggle{font-size:12px;padding:9px}.timeline{padding-left:22px}.timeline-entry{padding:12px}.timeline-entry h3{font-size:17px}.timeline-entry p{font-size:15px}.timeline-photos{grid-template-columns:repeat(2,minmax(0,1fr))}.timeline-photos img{height:110px}}
 
+
+/* Dashboard: mapa seleccionable y línea temporal horizontal */
+.dash-shell{max-width:1500px;min-height:90vh}
+.dash-tools{grid-template-columns:minmax(220px,1fr) minmax(190px,260px)}
+.dash-map-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.8fr);gap:16px;padding:0 24px 20px;align-items:stretch}
+#dashboardMap{height:clamp(320px,43vh,520px);min-width:0;border:1px solid #30485f;border-radius:13px;overflow:hidden;background:#dbe6e9}
+.dash-map-note{font-size:13px;color:#8fa7bc;padding:10px 2px 0}
+.dash-map-layout .detail-form{max-height:clamp(320px,43vh,520px);overflow:auto}
+.horizontal-timeline-wrap{border-top:1px solid #21364b;padding:17px 24px 24px;overflow:hidden}
+.timeline-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.timeline-title-row h3{margin:0;color:#54d8ed;font-size:21px}
+.timeline-title-row span{font-size:13px;color:#8fa7bc}
+.horizontal-timeline{display:flex;align-items:stretch;gap:20px;overflow-x:auto;overflow-y:hidden;padding:28px 12px 20px;scroll-snap-type:x mandatory;scrollbar-color:#54d8ed #102033;position:relative;min-height:230px}
+.horizontal-timeline:before{content:"";position:absolute;left:0;right:0;top:13px;height:3px;border-radius:3px;background:linear-gradient(90deg,#ff304f,#54d8ed,#39546c)}
+.timeline-stop{position:relative;flex:0 0 260px;max-width:260px;scroll-snap-align:start;border:1px solid #2b4054;border-radius:13px;background:linear-gradient(155deg,#10243a,#081522);padding:14px;animation:timelineRise .55s both;transition:transform .25s,border-color .25s,box-shadow .25s;cursor:pointer}
+.timeline-stop:before{content:"";position:absolute;top:-22px;left:18px;width:13px;height:13px;border-radius:50%;background:#ff304f;border:3px solid #0c1a2a;box-shadow:0 0 0 2px #ff304f,0 0 15px #ff304f88}
+.timeline-stop:hover,.timeline-stop.selected{transform:translateY(-5px);border-color:#54d8ed;box-shadow:0 10px 28px #0005,0 0 0 1px #54d8ed55}
+.timeline-stop:nth-child(odd){animation-delay:.08s}.timeline-stop:nth-child(3n){animation-delay:.16s}
+.timeline-stop time{font-size:12px;color:#54d8ed;display:block;margin-bottom:8px;font-weight:800}
+.timeline-stop h4{font-size:17px;margin:0 0 7px}
+.timeline-stop p{font-size:14px;line-height:1.45;color:#c8d6e5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap}
+.timeline-stop .floating-photo{display:block;width:100%;height:115px;object-fit:cover;border-radius:9px;margin:10px 0;border:1px solid #30485f;animation:photoFloat 4s ease-in-out infinite;box-shadow:0 8px 20px #0005}
+.timeline-stop:nth-child(even) .floating-photo{animation-delay:-1.7s}
+.timeline-stop .no-photo{height:55px;display:flex;align-items:center;justify-content:center;border:1px dashed #30485f;border-radius:9px;color:#7890a7;font-size:13px;margin:10px 0}
+.timeline-stop .timeline-votes{font-size:12px;color:#8fa7bc;margin:9px 0}
+.timeline-empty{width:100%;padding:26px;border:1px dashed #30485f;border-radius:12px;color:#8fa7bc;text-align:center}
+.dash-marker{background:#ff304f;border:3px solid #fff;border-radius:50%;width:23px;height:23px;box-shadow:0 0 0 6px #ff304f44,0 0 18px #ff304f;display:block}
+.dash-marker.active{background:#54d8ed;box-shadow:0 0 0 7px #54d8ed44,0 0 22px #54d8ed}
+@keyframes timelineRise{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
+@keyframes photoFloat{0%,100%{transform:translateY(0) rotate(-.4deg)}50%{transform:translateY(-5px) rotate(.4deg)}}
+@media(max-width:900px){.dash-map-layout{grid-template-columns:1fr;padding:0 14px 16px}.dash-map-layout .detail-form{max-height:none}.horizontal-timeline-wrap{padding:15px 14px 18px}.timeline-stop{flex-basis:230px;max-width:230px}#dashboardMap{height:38vh;min-height:280px}}
+@media(prefers-reduced-motion:reduce){.timeline-stop,.timeline-stop .floating-photo{animation:none!important;transition:none!important}}
+
 </style>
 </head>
 <body>
@@ -65,10 +98,11 @@
  <div class="dash-shell">
   <div class="dash-head"><h2>NAZER · Dashboard de alertas</h2><div class="dash-heading-actions"><button id="toggleTimeline" class="dash-view-toggle">Ver línea de tiempo</button><button id="closeDashboard" class="dash-close">Cerrar ✕</button></div></div>
   <div class="dash-tools"><input id="dashSearch" placeholder="Buscar por descripción o información…"><select id="dashCategory"><option value="">Todas las categorías</option><option>Tránsito</option><option>Alumbrado</option><option>Basura</option><option>Árboles</option><option>Espacios verdes</option><option>Semáforos</option><option>Accesibilidad</option><option>Infraestructura</option><option>Agua e inundación</option><option>Servicios municipales</option></select></div>
-  <div id="dashSummary" class="dash-summary">Seleccioná una alerta para ver sus detalles.</div>
-  <div class="dash-content"><div id="dashList" class="dash-list"></div>
-   <form id="detailForm" class="detail-form"><h3>Detalle de la alerta</h3><p class="hint">Elegí una alerta de la lista para agregar información o fotos.</p><div id="detailFields" class="hint">Todavía no hay una alerta seleccionada.</div></form>
+  <div id="dashSummary" class="dash-summary">Seleccioná un punto en el mapa o en la línea de tiempo.</div>
+  <div class="dash-map-layout"><div><div id="dashboardMap" aria-label="Mapa de alertas registradas"></div><div class="dash-map-note">Seleccioná un marcador del mapa para abrir su ficha. Los puntos registrados se muestran aquí.</div></div>
+   <form id="detailForm" class="detail-form"><h3>Ficha de la alerta</h3><p class="hint">Seleccioná un punto del mapa o de la línea de tiempo para ver y editar sus datos.</p><div id="detailFields" class="hint">Todavía no hay una alerta seleccionada.</div></form>
   </div>
+  <div class="horizontal-timeline-wrap"><div class="timeline-title-row"><h3>Historial · Línea de tiempo</h3><span>Deslizá horizontalmente para recorrer los registros →</span></div><div id="dashTimeline" class="horizontal-timeline"></div></div>
  </div>
 </section>
 <footer class="footer"><span>NAZER · Observatorio Real</span><span>Cartografía © OpenStreetMap contributors</span></footer>
@@ -88,44 +122,63 @@ map.on('click',e=>choose(e.latlng));
 function render(){savedLayer.clearLayers();points.forEach(p=>{const color=colors[p.category]||'#54d8ed';L.circleMarker([p.lat,p.lng],{radius:8,color:'#fff',weight:2,fillColor:color,fillOpacity:.95}).bindPopup('<b>'+esc(p.category)+'</b><br>'+esc(p.description||'Sin descripción')+'<br><small>'+new Date(p.created).toLocaleString('es-AR')+'</small>').addTo(savedLayer)});$('total').textContent=points.length;$('types').textContent=new Set(points.map(p=>p.category)).size;$('history').innerHTML=points.length?points.slice().reverse().map(p=>'<div class="item"><strong>'+esc(p.category)+'</strong><span>'+esc(p.description||'Sin descripción')+'</span><div class="tag">'+new Date(p.created).toLocaleString('es-AR')+'</div><button class="btn secondary" data-go="'+p.id+'" style="margin-top:8px">Ver en mapa</button></div>').join(''):'<p class="hint">Todavía no hay puntos guardados.</p>';localStorage.setItem('nazer-map-points-v1',JSON.stringify(points))}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
-let activeAlertId=null, dashboardMode="cards";
-function openDashboard(){ $('dashboard').classList.add('open'); renderDashboard(); }
+let activeAlertId=null,dashMap=null,dashAlertLayer=null,dashMarkers={};
+function openDashboard(){ $('dashboard').classList.add('open'); ensureDashMap(); renderDashboard(); setTimeout(()=>{if(dashMap)dashMap.invalidateSize(true)},180); }
 function closeDashboard(){ $('dashboard').classList.remove('open'); }
 $('openDashboard').addEventListener('click',openDashboard);
 $('closeDashboard').addEventListener('click',closeDashboard);
-$('toggleTimeline').addEventListener('click',()=>{dashboardMode=dashboardMode==='cards'?'timeline':'cards';$('toggleTimeline').textContent=dashboardMode==='cards'?'Ver línea de tiempo':'Ver tarjetas';renderDashboard()});
 $('dashboard').addEventListener('click',e=>{if(e.target===$('dashboard'))closeDashboard()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDashboard()});
 $('dashSearch').addEventListener('input',renderDashboard);
 $('dashCategory').addEventListener('change',renderDashboard);
-function renderDashboard(){
+function ensureDashMap(){
+ if(dashMap)return;
+ dashMap=L.map('dashboardMap',{zoomControl:true,preferCanvas:true}).setView([-34.532,-58.516],14);
+ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(dashMap);
+ dashAlertLayer=L.layerGroup().addTo(dashMap);
+ dashMap.on('click',()=>{});
+}
+function filteredAlerts(){
  const q=$('dashSearch').value.trim().toLocaleLowerCase('es-AR'),cat=$('dashCategory').value;
- const filtered=points.slice().reverse().filter(p=>(!cat||p.category===cat)&&(!q||[p.category,p.description,p.extraInfo].some(v=>String(v||'').toLocaleLowerCase('es-AR').includes(q))));
- $('dashSummary').textContent=filtered.length+' alertas visibles · '+points.length+' en total. El + suma una confirmación en este navegador.';
- $('dashList').className=dashboardMode==='timeline'?'timeline':'dash-list';
- $('toggleTimeline').textContent=dashboardMode==='cards'?'Ver línea de tiempo':'Ver tarjetas';
- $('dashList').innerHTML=filtered.length?filtered.map(p=>{
-  const photos=(p.photos||[]).map((src,i)=>'<img src="'+src+'" alt="Foto de '+esc(p.category)+' '+(i+1)+'" loading="lazy">').join('');
-  const actions='<div class="alert-actions"><button data-detail="'+p.id+'">Ver / editar</button><button data-map="'+p.id+'">Ver en mapa</button><button class="vote-btn" data-vote="'+p.id+'">+ '+(p.votes||0)+'</button></div>';
-  if(dashboardMode==='timeline')return '<article class="timeline-entry '+(p.id===activeAlertId?'selected':'')+'"><div class="timeline-date">'+new Date(p.created).toLocaleString('es-AR')+'</div><h3>'+esc(p.category)+'</h3><p>'+esc(p.description||'Sin descripción inicial')+'</p>'+(p.extraInfo?'<div class="timeline-extra">'+esc(p.extraInfo)+'</div>':'')+(photos?'<div class="timeline-photos">'+photos+'</div>':'<div class="timeline-no-photo">Sin fotos adjuntas</div>')+'<div class="alert-meta">'+(p.votes||0)+' confirmaciones · '+((p.photos||[]).length)+' fotos</div>'+actions+'</article>';
-  return '<article class="alert-card '+(p.id===activeAlertId?'selected':'')+'"><h3>'+esc(p.category)+'</h3><p>'+esc(p.description||'Sin descripción inicial')+'</p>'+(p.extraInfo?'<p>'+esc(p.extraInfo)+'</p>':'')+(photos?'<div class="timeline-photos">'+photos+'</div>':'')+'<div class="alert-meta">'+new Date(p.created).toLocaleString('es-AR')+' · '+(p.votes||0)+' confirmaciones · '+((p.photos||[]).length)+' fotos</div>'+actions+'</article>';
- }).join(''):'<div class="empty-dash">No hay alertas que coincidan con estos filtros. Las nuevas alertas aparecerán acá después de guardarlas en el mapa.</div>';
+ return points.slice().sort((a,b)=>new Date(a.created)-new Date(b.created)).filter(p=>(!cat||p.category===cat)&&(!q||[p.category,p.description,p.extraInfo].some(v=>String(v||'').toLocaleLowerCase('es-AR').includes(q))));
+}
+function selectAlert(id,moveMap=false){
+ activeAlertId=id;const p=points.find(x=>x.id===id);if(!p)return;
+ renderDashboard();
+ if(moveMap&&dashMap){dashMap.setView([p.lat,p.lng],17);const m=dashMarkers[p.id];if(m)m.openPopup();}
+}
+function renderDashboard(){
+ const filtered=filteredAlerts();
+ $('dashSummary').textContent=filtered.length+' alertas visibles de '+points.length+' registradas · Seleccioná un marcador o un registro para abrir su ficha.';
+ $('dashTimeline').innerHTML=filtered.length?filtered.map((p,i)=>{
+  const photo=(p.photos||[])[0];
+  return '<article class="timeline-stop '+(p.id===activeAlertId?'selected':'')+'" data-timeline="'+p.id+'" tabindex="0" role="button" aria-label="Seleccionar alerta '+esc(p.category)+'"><time>'+new Date(p.created).toLocaleString('es-AR')+'</time><h4>'+esc(p.category)+'</h4><p>'+esc(p.description||'Sin descripción inicial')+'</p>'+(p.extraInfo?'<p>'+esc(p.extraInfo)+'</p>':'')+(photo?'<img class="floating-photo" src="'+photo+'" alt="Foto adjunta a la alerta" loading="lazy">':'<div class="no-photo">Sin fotografía adjunta</div>')+'<div class="timeline-votes">'+(p.votes||0)+' confirmaciones · '+((p.photos||[]).length)+' fotos</div></article>';
+ }).join(''):'<div class="timeline-empty">Todavía no hay alertas para mostrar. Marcá un punto en el mapa principal y guardalo; aparecerá aquí.</div>';
+ if(dashAlertLayer){
+  dashAlertLayer.clearLayers();dashMarkers={};
+  filtered.forEach(p=>{
+   const active=p.id===activeAlertId;
+   const icon=L.divIcon({className:'',html:'<span class="dash-marker '+(active?'active':'')+'"></span>',iconSize:[23,23],iconAnchor:[11,11]});
+   const m=L.marker([p.lat,p.lng],{icon,title:p.category+' — '+(p.description||'')}).bindPopup('<b>'+esc(p.category)+'</b><br>'+esc(p.description||'Sin descripción')+'<br><small>'+new Date(p.created).toLocaleString('es-AR')+'</small>');
+   m.on('click',()=>{activeAlertId=p.id;renderDashboard();setTimeout(()=>{const el=document.querySelector('[data-timeline="'+p.id+'"]');if(el)el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'})},60)});
+   m.addTo(dashAlertLayer);dashMarkers[p.id]=m;
+  });
+  if(filtered.length&&dashMap&&!activeAlertId){const bounds=L.latLngBounds(filtered.map(p=>[p.lat,p.lng]));if(bounds.isValid())dashMap.fitBounds(bounds.pad(.18),{maxZoom:15})}
+ }
  renderDetail();
 }
+$('dashTimeline').addEventListener('click',e=>{const item=e.target.closest('[data-timeline]');if(item)selectAlert(item.dataset.timeline,true)});
+$('dashTimeline').addEventListener('keydown',e=>{const item=e.target.closest('[data-timeline]');if(item&&(e.key==='Enter'||e.key===' ')){e.preventDefault();selectAlert(item.dataset.timeline,true)}});
 function renderDetail(){
  const p=points.find(x=>x.id===activeAlertId),box=$('detailFields');
  if(!p){box.innerHTML='Todavía no hay una alerta seleccionada.';return}
- box.innerHTML='<div class="alert-meta">'+esc(p.category)+' · '+new Date(p.created).toLocaleString('es-AR')+'</div><p>'+esc(p.description||'Sin descripción inicial')+'</p><label for="extraInfo">Información complementaria</label><textarea id="extraInfo" placeholder="Detalles adicionales, seguimiento, observaciones…">'+esc(p.extraInfo||'')+'</textarea><label for="photoFiles">Agregar fotos (máximo 3 por vez)</label><input id="photoFiles" type="file" accept="image/*" multiple><div class="photo-grid">'+(p.photos||[]).map((src,i)=>'<img src="'+src+'" alt="Foto adjunta '+(i+1)+'">').join('')+'</div><p class="alert-meta">Confirmaciones: '+(p.votes||0)+' · Ubicación: '+p.lat.toFixed(5)+', '+p.lng.toFixed(5)+'</p><button type="submit" class="btn">Guardar información y fotos</button>';
+ box.innerHTML='<div class="alert-meta">'+esc(p.category)+' · '+new Date(p.created).toLocaleString('es-AR')+'</div><p>'+esc(p.description||'Sin descripción inicial')+'</p><label for="extraInfo">Información complementaria</label><textarea id="extraInfo" placeholder="Detalles adicionales, seguimiento, observaciones…">'+esc(p.extraInfo||'')+'</textarea><label for="photoFiles">Agregar fotos (máximo 3 por vez)</label><input id="photoFiles" type="file" accept="image/*" multiple><div class="photo-grid">'+(p.photos||[]).map((src,i)=>'<img src="'+src+'" alt="Foto adjunta '+(i+1)+'">').join('')+'</div><p class="alert-meta">Confirmaciones: '+(p.votes||0)+' · Ubicación: '+p.lat.toFixed(5)+', '+p.lng.toFixed(5)+'</p><div class="alert-actions"><button type="button" class="vote-btn" id="detailVote">+ Confirmar ('+(p.votes||0)+')</button><button type="button" id="focusAlert" class="dash-close">Centrar mapa</button></div><button type="submit" class="btn">Guardar información y fotos</button>';
+ $('detailVote')?.addEventListener('click',()=>{p.votes=(p.votes||0)+1;render();renderDashboard();setStatus('Confirmación + registrada en este navegador.')});
+ $('focusAlert')?.addEventListener('click',()=>{if(dashMap){dashMap.setView([p.lat,p.lng],17);const m=dashMarkers[p.id];if(m)m.openPopup()}});
 }
 async function compressPhoto(file){
  return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=reject;reader.onload=()=>{const img=new Image();img.onerror=reject;img.onload=()=>{const max=1000,scale=Math.min(1,max/Math.max(img.width,img.height)),canvas=document.createElement('canvas');canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.72))};img.src=reader.result};reader.readAsDataURL(file)});
 }
-$('dashList').addEventListener('click',async e=>{
- const detail=e.target.closest('[data-detail]'),go=e.target.closest('[data-map]'),vote=e.target.closest('[data-vote]');
- if(detail){activeAlertId=detail.dataset.detail;renderDashboard();return}
- if(go){const p=points.find(x=>x.id===go.dataset.map);if(p){closeDashboard();map.setView([p.lat,p.lng],17);savedLayer.eachLayer(l=>{if(l.getLatLng&&Math.abs(l.getLatLng().lat-p.lat)<1e-7&&Math.abs(l.getLatLng().lng-p.lng)<1e-7)l.openPopup()})}return}
- if(vote){const p=points.find(x=>x.id===vote.dataset.vote);if(p){p.votes=(p.votes||0)+1;render();renderDashboard();setStatus('Confirmación + registrada en este navegador.')}return}
-});
 $('detailForm').addEventListener('submit',async e=>{
  e.preventDefault();const p=points.find(x=>x.id===activeAlertId);if(!p)return;
  const info=$('extraInfo');if(info)p.extraInfo=info.value.trim();
@@ -133,7 +186,6 @@ $('detailForm').addEventListener('submit',async e=>{
  if(files.length){const newPhotos=[];for(const file of files){if(!file.type.startsWith('image/'))continue;try{newPhotos.push(await compressPhoto(file))}catch(err){}}p.photos=[...(p.photos||[]),...newPhotos].slice(-6)}
  try{render();renderDashboard();setStatus('Alerta actualizada en este navegador.')}catch(err){setStatus('No se pudo guardar: el navegador puede haberse quedado sin espacio.')}
 });
-
 $('save').addEventListener('click',()=>{if(!selected){setStatus('Primero tocá el mapa para elegir el lugar.');return}const p={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),lat:selected.lat,lng:selected.lng,category:$('category').value,description:$('description').value.trim(),created:new Date().toISOString()};points.push(p);render();$('description').value='';setStatus('Punto guardado en este navegador.');});
 $('history').addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(!b)return;const p=points.find(x=>x.id===b.dataset.go);if(p){map.setView([p.lat,p.lng],17);savedLayer.eachLayer(l=>{if(l.getLatLng&&l.getLatLng().lat===p.lat&&l.getLatLng().lng===p.lng)l.openPopup()})}});
 $('clear').addEventListener('click',()=>{if(confirm('¿Borrar todos los puntos guardados en este navegador?')){points=[];render();setStatus('Histórico local borrado.')}});
