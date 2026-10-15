@@ -24,10 +24,16 @@
 .leaflet-popup-content{font-size:16px;line-height:1.5}.leaflet-control-zoom a{font-size:22px!important}
 @media(min-width:801px){.layout{grid-template-columns:minmax(0,1fr) 600px}.panel{padding:24px 26px}}
 @media(max-width:800px){.brand{font-size:22px}.sub{font-size:14px}.status{font-size:14px}.panel h2{font-size:18px}.hint{font-size:16px}.field,select,textarea{font-size:17px}.btn{font-size:17px}.stat strong{font-size:25px}.stat span{font-size:14px}.item{font-size:16px}.tag{font-size:13px}.footer{font-size:12px}.layout{grid-template-rows:minmax(45vh,1fr) auto}.panel{max-height:55vh}}
+
+/* Dashboard de alertas */
+.top-actions{display:flex;align-items:center;gap:10px}.dash-open{border:1px solid #ff304f;background:#ff304f;color:#fff;font-weight:800;border-radius:9px;padding:11px 15px;cursor:pointer;font-size:15px;white-space:nowrap}
+.dash-backdrop{position:fixed;inset:0;background:#020811eF;z-index:3000;display:none;overflow:auto;padding:24px}.dash-backdrop.open{display:block}.dash-shell{max-width:1180px;margin:0 auto;background:#0c1a2a;border:1px solid #294057;border-radius:16px;min-height:80vh;box-shadow:0 20px 80px #0009}.dash-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 24px;border-bottom:1px solid #21364b}.dash-head h2{margin:0;color:#54d8ed;font-size:25px}.dash-close{background:#182b3d;color:#fff;border:1px solid #30485f;border-radius:8px;padding:10px 14px;cursor:pointer;font-size:16px}.dash-tools{display:grid;grid-template-columns:minmax(200px,1fr) minmax(180px,240px);gap:12px;padding:18px 24px}.dash-tools input,.dash-tools select,.detail-form textarea{margin:0;background:#07111d;color:#e9f3ff;border:1px solid #30485f;border-radius:9px;padding:12px;font:inherit;width:100%}.dash-summary{padding:0 24px 14px;color:#8fa7bc;font-size:15px}.dash-content{display:grid;grid-template-columns:minmax(280px,1fr) minmax(280px,.9fr);gap:18px;padding:0 24px 24px}.dash-list{display:flex;flex-direction:column;gap:10px}.alert-card{border:1px solid #2b4054;background:#081522;border-radius:12px;padding:15px}.alert-card.selected{border-color:#54d8ed;box-shadow:0 0 0 1px #54d8ed33}.alert-card h3{margin:0 0 7px;font-size:18px}.alert-card p{margin:0 0 10px;color:#b6c7d8;font-size:15px;line-height:1.45;overflow-wrap:anywhere}.alert-meta{font-size:13px;color:#8fa7bc;margin-bottom:10px}.alert-actions{display:flex;gap:8px;flex-wrap:wrap}.alert-actions button,.vote-btn{border:1px solid #30485f;background:#14283b;color:#e9f3ff;border-radius:8px;padding:9px 12px;cursor:pointer;font-size:14px}.alert-actions .vote-btn{background:#ff304f;border-color:#ff304f;color:white;font-weight:900}.detail-form{border:1px solid #2b4054;border-radius:12px;padding:18px;align-self:start}.detail-form h3{margin:0 0 12px;color:#54d8ed;font-size:20px}.detail-form label{display:block;margin:13px 0 7px;font-size:14px;color:#b6c7d8}.detail-form textarea{min-height:95px;resize:vertical}.detail-form input[type=file]{width:100%;font-size:14px;color:#b6c7d8}.detail-form .btn{margin-top:12px}.photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.photo-grid img{width:100%;height:100px;object-fit:cover;border-radius:8px;border:1px solid #30485f}.empty-dash{color:#8fa7bc;padding:22px;border:1px dashed #30485f;border-radius:10px;font-size:15px}
+@media(max-width:800px){.top{align-items:flex-start}.top-actions{flex-direction:column;align-items:flex-end}.dash-open{padding:9px 11px;font-size:13px}.dash-backdrop{padding:8px}.dash-head{padding:15px}.dash-head h2{font-size:20px}.dash-tools{grid-template-columns:1fr;padding:14px}.dash-content{grid-template-columns:1fr;padding:0 14px 16px}.dash-summary{padding:0 14px 12px}.photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 </style>
 </head>
 <body>
-<header class="top"><div><div class="brand"><b>NAZER</b> · OBSERVATORIO REAL</div><div class="sub">Núcleo Administrativo Zonal y Estratégico Regional · Datos reales, trazables y abiertos</div></div><div class="status" id="status">Iniciando mapa…</div></header>
+<header class="top"><div><div class="brand"><b>NAZER</b> · OBSERVATORIO REAL</div><div class="sub">Núcleo Administrativo Zonal y Estratégico Regional · Datos reales, trazables y abiertos</div></div><div class="top-actions"><div class="status" id="status">Iniciando mapa…</div><button id="openDashboard" class="dash-open">Dashboard de alertas</button></div></header>
 <main class="layout"><section class="mapwrap"><div id="map" aria-label="Mapa interactivo de Vicente López"></div></section><aside class="panel">
 <h2>Registrar un punto</h2><p class="hint">Tocá el mapa para elegir una ubicación. Completá el tipo y la descripción y guardalo. Los puntos de esta primera versión se guardan en este navegador.</p>
 <input id="search" class="field" placeholder="Buscar calle o lugar…" aria-label="Buscar lugar"><button id="searchBtn" class="btn secondary">Buscar ubicación</button>
@@ -36,7 +42,18 @@
 <div id="selected" class="hint">Ubicación: tocá el mapa para marcar un punto.</div><button id="save" class="btn">Guardar punto</button><button id="locate" class="btn secondary">Ir a mi ubicación</button>
 <div class="stats"><div class="stat"><strong id="total">0</strong><span>Puntos registrados</span></div><div class="stat"><strong id="types">0</strong><span>Categorías activas</span></div></div>
 <h2>Histórico</h2><div id="history" class="list"><p class="hint">Todavía no hay puntos guardados.</p></div><button id="clear" class="btn secondary">Borrar puntos de este navegador</button>
-</aside></main><footer class="footer"><span>NAZER · Observatorio Real</span><span>Cartografía © OpenStreetMap contributors</span></footer>
+</aside></main>
+<section id="dashboard" class="dash-backdrop" role="dialog" aria-modal="true" aria-label="Dashboard de alertas">
+ <div class="dash-shell">
+  <div class="dash-head"><h2>NAZER · Dashboard de alertas</h2><button id="closeDashboard" class="dash-close">Cerrar ✕</button></div>
+  <div class="dash-tools"><input id="dashSearch" placeholder="Buscar por descripción o información…"><select id="dashCategory"><option value="">Todas las categorías</option><option>Tránsito</option><option>Alumbrado</option><option>Basura</option><option>Árboles</option><option>Espacios verdes</option><option>Semáforos</option><option>Accesibilidad</option><option>Infraestructura</option><option>Agua e inundación</option><option>Servicios municipales</option></select></div>
+  <div id="dashSummary" class="dash-summary">Seleccioná una alerta para ver sus detalles.</div>
+  <div class="dash-content"><div id="dashList" class="dash-list"></div>
+   <form id="detailForm" class="detail-form"><h3>Detalle de la alerta</h3><p class="hint">Elegí una alerta de la lista para agregar información o fotos.</p><div id="detailFields" class="hint">Todavía no hay una alerta seleccionada.</div></form>
+  </div>
+ </div>
+</section>
+<footer class="footer"><span>NAZER · Observatorio Real</span><span>Cartografía © OpenStreetMap contributors</span></footer>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (function(){
@@ -52,6 +69,45 @@ function choose(latlng,focus=true){selected=L.latLng(latlng.lat,latlng.lng);$('s
 map.on('click',e=>choose(e.latlng));
 function render(){savedLayer.clearLayers();points.forEach(p=>{const color=colors[p.category]||'#54d8ed';L.circleMarker([p.lat,p.lng],{radius:8,color:'#fff',weight:2,fillColor:color,fillOpacity:.95}).bindPopup('<b>'+esc(p.category)+'</b><br>'+esc(p.description||'Sin descripción')+'<br><small>'+new Date(p.created).toLocaleString('es-AR')+'</small>').addTo(savedLayer)});$('total').textContent=points.length;$('types').textContent=new Set(points.map(p=>p.category)).size;$('history').innerHTML=points.length?points.slice().reverse().map(p=>'<div class="item"><strong>'+esc(p.category)+'</strong><span>'+esc(p.description||'Sin descripción')+'</span><div class="tag">'+new Date(p.created).toLocaleString('es-AR')+'</div><button class="btn secondary" data-go="'+p.id+'" style="margin-top:8px">Ver en mapa</button></div>').join(''):'<p class="hint">Todavía no hay puntos guardados.</p>';localStorage.setItem('nazer-map-points-v1',JSON.stringify(points))}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+let activeAlertId=null;
+function openDashboard(){ $('dashboard').classList.add('open'); renderDashboard(); }
+function closeDashboard(){ $('dashboard').classList.remove('open'); }
+$('openDashboard').addEventListener('click',openDashboard);
+$('closeDashboard').addEventListener('click',closeDashboard);
+$('dashboard').addEventListener('click',e=>{if(e.target===$('dashboard'))closeDashboard()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDashboard()});
+$('dashSearch').addEventListener('input',renderDashboard);
+$('dashCategory').addEventListener('change',renderDashboard);
+function renderDashboard(){
+ const q=$('dashSearch').value.trim().toLocaleLowerCase('es-AR'),cat=$('dashCategory').value;
+ const filtered=points.slice().reverse().filter(p=>(!cat||p.category===cat)&&(!q||[p.category,p.description,p.extraInfo].some(v=>String(v||'').toLocaleLowerCase('es-AR').includes(q))));
+ $('dashSummary').textContent=filtered.length+' alertas visibles · '+points.length+' en total. El + suma una confirmación en este navegador.';
+ $('dashList').innerHTML=filtered.length?filtered.map(p=>'<article class="alert-card '+(p.id===activeAlertId?'selected':'')+'"><h3>'+esc(p.category)+'</h3><p>'+esc(p.description||'Sin descripción inicial')+'</p>'+(p.extraInfo?'<p>'+esc(p.extraInfo)+'</p>':'')+'<div class="alert-meta">'+new Date(p.created).toLocaleString('es-AR')+' · '+(p.votes||0)+' confirmaciones · '+((p.photos||[]).length)+' fotos</div><div class="alert-actions"><button data-detail="'+p.id+'">Ver / editar</button><button data-map="'+p.id+'">Ver en mapa</button><button class="vote-btn" data-vote="'+p.id+'">+ '+(p.votes||0)+'</button></div></article>').join(''):'<div class="empty-dash">No hay alertas que coincidan con estos filtros. Las nuevas alertas aparecen acá después de guardarlas en el mapa.</div>';
+ renderDetail();
+}
+function renderDetail(){
+ const p=points.find(x=>x.id===activeAlertId),box=$('detailFields');
+ if(!p){box.innerHTML='Todavía no hay una alerta seleccionada.';return}
+ box.innerHTML='<div class="alert-meta">'+esc(p.category)+' · '+new Date(p.created).toLocaleString('es-AR')+'</div><p>'+esc(p.description||'Sin descripción inicial')+'</p><label for="extraInfo">Información complementaria</label><textarea id="extraInfo" placeholder="Detalles adicionales, seguimiento, observaciones…">'+esc(p.extraInfo||'')+'</textarea><label for="photoFiles">Agregar fotos (máximo 3 por vez)</label><input id="photoFiles" type="file" accept="image/*" multiple><div class="photo-grid">'+(p.photos||[]).map((src,i)=>'<img src="'+src+'" alt="Foto adjunta '+(i+1)+'">').join('')+'</div><p class="alert-meta">Confirmaciones: '+(p.votes||0)+' · Ubicación: '+p.lat.toFixed(5)+', '+p.lng.toFixed(5)+'</p><button type="submit" class="btn">Guardar información y fotos</button>';
+}
+async function compressPhoto(file){
+ return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=reject;reader.onload=()=>{const img=new Image();img.onerror=reject;img.onload=()=>{const max=1000,scale=Math.min(1,max/Math.max(img.width,img.height)),canvas=document.createElement('canvas');canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.72))};img.src=reader.result};reader.readAsDataURL(file)});
+}
+$('dashList').addEventListener('click',async e=>{
+ const detail=e.target.closest('[data-detail]'),go=e.target.closest('[data-map]'),vote=e.target.closest('[data-vote]');
+ if(detail){activeAlertId=detail.dataset.detail;renderDashboard();return}
+ if(go){const p=points.find(x=>x.id===go.dataset.map);if(p){closeDashboard();map.setView([p.lat,p.lng],17);savedLayer.eachLayer(l=>{if(l.getLatLng&&Math.abs(l.getLatLng().lat-p.lat)<1e-7&&Math.abs(l.getLatLng().lng-p.lng)<1e-7)l.openPopup()})}return}
+ if(vote){const p=points.find(x=>x.id===vote.dataset.vote);if(p){p.votes=(p.votes||0)+1;render();renderDashboard();setStatus('Confirmación + registrada en este navegador.')}return}
+});
+$('detailForm').addEventListener('submit',async e=>{
+ e.preventDefault();const p=points.find(x=>x.id===activeAlertId);if(!p)return;
+ const info=$('extraInfo');if(info)p.extraInfo=info.value.trim();
+ const files=Array.from(($('photoFiles')||{}).files||[]).slice(0,3);
+ if(files.length){const newPhotos=[];for(const file of files){if(!file.type.startsWith('image/'))continue;try{newPhotos.push(await compressPhoto(file))}catch(err){}}p.photos=[...(p.photos||[]),...newPhotos].slice(-6)}
+ try{render();renderDashboard();setStatus('Alerta actualizada en este navegador.')}catch(err){setStatus('No se pudo guardar: el navegador puede haberse quedado sin espacio.')}
+});
+
 $('save').addEventListener('click',()=>{if(!selected){setStatus('Primero tocá el mapa para elegir el lugar.');return}const p={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),lat:selected.lat,lng:selected.lng,category:$('category').value,description:$('description').value.trim(),created:new Date().toISOString()};points.push(p);render();$('description').value='';setStatus('Punto guardado en este navegador.');});
 $('history').addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(!b)return;const p=points.find(x=>x.id===b.dataset.go);if(p){map.setView([p.lat,p.lng],17);savedLayer.eachLayer(l=>{if(l.getLatLng&&l.getLatLng().lat===p.lat&&l.getLatLng().lng===p.lng)l.openPopup()})}});
 $('clear').addEventListener('click',()=>{if(confirm('¿Borrar todos los puntos guardados en este navegador?')){points=[];render();setStatus('Histórico local borrado.')}});
