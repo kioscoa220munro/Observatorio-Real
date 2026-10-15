@@ -30,6 +30,24 @@
 .dash-backdrop{position:fixed;inset:0;background:#020811eF;z-index:3000;display:none;overflow:auto;padding:24px}.dash-backdrop.open{display:block}.dash-shell{max-width:1180px;margin:0 auto;background:#0c1a2a;border:1px solid #294057;border-radius:16px;min-height:80vh;box-shadow:0 20px 80px #0009}.dash-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 24px;border-bottom:1px solid #21364b}.dash-head h2{margin:0;color:#54d8ed;font-size:25px}.dash-close{background:#182b3d;color:#fff;border:1px solid #30485f;border-radius:8px;padding:10px 14px;cursor:pointer;font-size:16px}.dash-tools{display:grid;grid-template-columns:minmax(200px,1fr) minmax(180px,240px);gap:12px;padding:18px 24px}.dash-tools input,.dash-tools select,.detail-form textarea{margin:0;background:#07111d;color:#e9f3ff;border:1px solid #30485f;border-radius:9px;padding:12px;font:inherit;width:100%}.dash-summary{padding:0 24px 14px;color:#8fa7bc;font-size:15px}.dash-content{display:grid;grid-template-columns:minmax(280px,1fr) minmax(280px,.9fr);gap:18px;padding:0 24px 24px}.dash-list{display:flex;flex-direction:column;gap:10px}.alert-card{border:1px solid #2b4054;background:#081522;border-radius:12px;padding:15px}.alert-card.selected{border-color:#54d8ed;box-shadow:0 0 0 1px #54d8ed33}.alert-card h3{margin:0 0 7px;font-size:18px}.alert-card p{margin:0 0 10px;color:#b6c7d8;font-size:15px;line-height:1.45;overflow-wrap:anywhere}.alert-meta{font-size:13px;color:#8fa7bc;margin-bottom:10px}.alert-actions{display:flex;gap:8px;flex-wrap:wrap}.alert-actions button,.vote-btn{border:1px solid #30485f;background:#14283b;color:#e9f3ff;border-radius:8px;padding:9px 12px;cursor:pointer;font-size:14px}.alert-actions .vote-btn{background:#ff304f;border-color:#ff304f;color:white;font-weight:900}.detail-form{border:1px solid #2b4054;border-radius:12px;padding:18px;align-self:start}.detail-form h3{margin:0 0 12px;color:#54d8ed;font-size:20px}.detail-form label{display:block;margin:13px 0 7px;font-size:14px;color:#b6c7d8}.detail-form textarea{min-height:95px;resize:vertical}.detail-form input[type=file]{width:100%;font-size:14px;color:#b6c7d8}.detail-form .btn{margin-top:12px}.photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.photo-grid img{width:100%;height:100px;object-fit:cover;border-radius:8px;border:1px solid #30485f}.empty-dash{color:#8fa7bc;padding:22px;border:1px dashed #30485f;border-radius:10px;font-size:15px}
 @media(max-width:800px){.top{align-items:flex-start}.top-actions{flex-direction:column;align-items:flex-end}.dash-open{padding:9px 11px;font-size:13px}.dash-backdrop{padding:8px}.dash-head{padding:15px}.dash-head h2{font-size:20px}.dash-tools{grid-template-columns:1fr;padding:14px}.dash-content{grid-template-columns:1fr;padding:0 14px 16px}.dash-summary{padding:0 14px 12px}.photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+
+/* Vista cronológica con texto y evidencia fotográfica */
+.dash-view-toggle{border:1px solid #54d8ed;background:#10283a;color:#54d8ed;border-radius:9px;padding:10px 13px;cursor:pointer;font-weight:800;font-size:14px;white-space:nowrap}
+.dash-heading-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.timeline{position:relative;padding:4px 0 4px 25px;display:flex;flex-direction:column;gap:17px}
+.timeline:before{content:"";position:absolute;left:8px;top:10px;bottom:10px;width:2px;background:linear-gradient(#ff304f,#54d8ed,#30485f)}
+.timeline-entry{position:relative;border:1px solid #2b4054;background:#081522;border-radius:12px;padding:16px}
+.timeline-entry:before{content:"";position:absolute;left:-23px;top:20px;width:12px;height:12px;border:3px solid #0c1a2a;border-radius:50%;background:#ff304f;box-shadow:0 0 0 2px #ff304f}
+.timeline-entry.selected{border-color:#54d8ed;box-shadow:0 0 0 1px #54d8ed33}
+.timeline-date{font-size:13px;color:#54d8ed;margin-bottom:8px;font-weight:800}
+.timeline-entry h3{font-size:19px;margin:0 0 8px}
+.timeline-entry p{font-size:16px;line-height:1.55;color:#d0dce8;margin:0 0 10px;overflow-wrap:anywhere;white-space:pre-wrap}
+.timeline-extra{border-left:3px solid #30485f;padding:9px 12px;margin:10px 0;color:#b6c7d8;font-size:15px;line-height:1.5;white-space:pre-wrap}
+.timeline-photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.timeline-photos img{width:100%;height:125px;object-fit:cover;border-radius:8px;border:1px solid #30485f;cursor:zoom-in}
+.timeline-no-photo{font-size:13px;color:#8fa7bc;padding:9px 0}
+@media(max-width:800px){.dash-heading-actions{justify-content:flex-end}.dash-view-toggle{font-size:12px;padding:9px}.timeline{padding-left:22px}.timeline-entry{padding:12px}.timeline-entry h3{font-size:17px}.timeline-entry p{font-size:15px}.timeline-photos{grid-template-columns:repeat(2,minmax(0,1fr))}.timeline-photos img{height:110px}}
+
 </style>
 </head>
 <body>
@@ -45,7 +63,7 @@
 </aside></main>
 <section id="dashboard" class="dash-backdrop" role="dialog" aria-modal="true" aria-label="Dashboard de alertas">
  <div class="dash-shell">
-  <div class="dash-head"><h2>NAZER · Dashboard de alertas</h2><button id="closeDashboard" class="dash-close">Cerrar ✕</button></div>
+  <div class="dash-head"><h2>NAZER · Dashboard de alertas</h2><div class="dash-heading-actions"><button id="toggleTimeline" class="dash-view-toggle">Ver línea de tiempo</button><button id="closeDashboard" class="dash-close">Cerrar ✕</button></div></div>
   <div class="dash-tools"><input id="dashSearch" placeholder="Buscar por descripción o información…"><select id="dashCategory"><option value="">Todas las categorías</option><option>Tránsito</option><option>Alumbrado</option><option>Basura</option><option>Árboles</option><option>Espacios verdes</option><option>Semáforos</option><option>Accesibilidad</option><option>Infraestructura</option><option>Agua e inundación</option><option>Servicios municipales</option></select></div>
   <div id="dashSummary" class="dash-summary">Seleccioná una alerta para ver sus detalles.</div>
   <div class="dash-content"><div id="dashList" class="dash-list"></div>
@@ -70,11 +88,12 @@ map.on('click',e=>choose(e.latlng));
 function render(){savedLayer.clearLayers();points.forEach(p=>{const color=colors[p.category]||'#54d8ed';L.circleMarker([p.lat,p.lng],{radius:8,color:'#fff',weight:2,fillColor:color,fillOpacity:.95}).bindPopup('<b>'+esc(p.category)+'</b><br>'+esc(p.description||'Sin descripción')+'<br><small>'+new Date(p.created).toLocaleString('es-AR')+'</small>').addTo(savedLayer)});$('total').textContent=points.length;$('types').textContent=new Set(points.map(p=>p.category)).size;$('history').innerHTML=points.length?points.slice().reverse().map(p=>'<div class="item"><strong>'+esc(p.category)+'</strong><span>'+esc(p.description||'Sin descripción')+'</span><div class="tag">'+new Date(p.created).toLocaleString('es-AR')+'</div><button class="btn secondary" data-go="'+p.id+'" style="margin-top:8px">Ver en mapa</button></div>').join(''):'<p class="hint">Todavía no hay puntos guardados.</p>';localStorage.setItem('nazer-map-points-v1',JSON.stringify(points))}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
-let activeAlertId=null;
+let activeAlertId=null, dashboardMode="cards";
 function openDashboard(){ $('dashboard').classList.add('open'); renderDashboard(); }
 function closeDashboard(){ $('dashboard').classList.remove('open'); }
 $('openDashboard').addEventListener('click',openDashboard);
 $('closeDashboard').addEventListener('click',closeDashboard);
+$('toggleTimeline').addEventListener('click',()=>{dashboardMode=dashboardMode==='cards'?'timeline':'cards';$('toggleTimeline').textContent=dashboardMode==='cards'?'Ver línea de tiempo':'Ver tarjetas';renderDashboard()});
 $('dashboard').addEventListener('click',e=>{if(e.target===$('dashboard'))closeDashboard()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDashboard()});
 $('dashSearch').addEventListener('input',renderDashboard);
@@ -83,7 +102,14 @@ function renderDashboard(){
  const q=$('dashSearch').value.trim().toLocaleLowerCase('es-AR'),cat=$('dashCategory').value;
  const filtered=points.slice().reverse().filter(p=>(!cat||p.category===cat)&&(!q||[p.category,p.description,p.extraInfo].some(v=>String(v||'').toLocaleLowerCase('es-AR').includes(q))));
  $('dashSummary').textContent=filtered.length+' alertas visibles · '+points.length+' en total. El + suma una confirmación en este navegador.';
- $('dashList').innerHTML=filtered.length?filtered.map(p=>'<article class="alert-card '+(p.id===activeAlertId?'selected':'')+'"><h3>'+esc(p.category)+'</h3><p>'+esc(p.description||'Sin descripción inicial')+'</p>'+(p.extraInfo?'<p>'+esc(p.extraInfo)+'</p>':'')+'<div class="alert-meta">'+new Date(p.created).toLocaleString('es-AR')+' · '+(p.votes||0)+' confirmaciones · '+((p.photos||[]).length)+' fotos</div><div class="alert-actions"><button data-detail="'+p.id+'">Ver / editar</button><button data-map="'+p.id+'">Ver en mapa</button><button class="vote-btn" data-vote="'+p.id+'">+ '+(p.votes||0)+'</button></div></article>').join(''):'<div class="empty-dash">No hay alertas que coincidan con estos filtros. Las nuevas alertas aparecen acá después de guardarlas en el mapa.</div>';
+ $('dashList').className=dashboardMode==='timeline'?'timeline':'dash-list';
+ $('toggleTimeline').textContent=dashboardMode==='cards'?'Ver línea de tiempo':'Ver tarjetas';
+ $('dashList').innerHTML=filtered.length?filtered.map(p=>{
+  const photos=(p.photos||[]).map((src,i)=>'<img src="'+src+'" alt="Foto de '+esc(p.category)+' '+(i+1)+'" loading="lazy">').join('');
+  const actions='<div class="alert-actions"><button data-detail="'+p.id+'">Ver / editar</button><button data-map="'+p.id+'">Ver en mapa</button><button class="vote-btn" data-vote="'+p.id+'">+ '+(p.votes||0)+'</button></div>';
+  if(dashboardMode==='timeline')return '<article class="timeline-entry '+(p.id===activeAlertId?'selected':'')+'"><div class="timeline-date">'+new Date(p.created).toLocaleString('es-AR')+'</div><h3>'+esc(p.category)+'</h3><p>'+esc(p.description||'Sin descripción inicial')+'</p>'+(p.extraInfo?'<div class="timeline-extra">'+esc(p.extraInfo)+'</div>':'')+(photos?'<div class="timeline-photos">'+photos+'</div>':'<div class="timeline-no-photo">Sin fotos adjuntas</div>')+'<div class="alert-meta">'+(p.votes||0)+' confirmaciones · '+((p.photos||[]).length)+' fotos</div>'+actions+'</article>';
+  return '<article class="alert-card '+(p.id===activeAlertId?'selected':'')+'"><h3>'+esc(p.category)+'</h3><p>'+esc(p.description||'Sin descripción inicial')+'</p>'+(p.extraInfo?'<p>'+esc(p.extraInfo)+'</p>':'')+(photos?'<div class="timeline-photos">'+photos+'</div>':'')+'<div class="alert-meta">'+new Date(p.created).toLocaleString('es-AR')+' · '+(p.votes||0)+' confirmaciones · '+((p.photos||[]).length)+' fotos</div>'+actions+'</article>';
+ }).join(''):'<div class="empty-dash">No hay alertas que coincidan con estos filtros. Las nuevas alertas aparecerán acá después de guardarlas en el mapa.</div>';
  renderDetail();
 }
 function renderDetail(){
