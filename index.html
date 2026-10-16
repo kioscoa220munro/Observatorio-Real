@@ -92,8 +92,7 @@
 <select id="category"><option value="Tránsito">Tránsito / baches</option><option value="Alumbrado">Alumbrado</option><option value="Basura">Basura</option><option value="Árboles">Árboles</option><option value="Espacios verdes">Espacios verdes</option><option value="Semáforos">Semáforos</option><option value="Accesibilidad">Accesibilidad</option><option value="Infraestructura">Infraestructura</option><option value="Agua e inundación">Agua e inundación</option><option value="Servicios municipales">Servicios municipales</option></select>
 <textarea id="description" rows="2" placeholder="¿Qué sucede en este lugar?"></textarea>
 <div id="selected" class="hint">Ubicación: tocá el mapa para marcar un punto.</div><button id="save" class="btn">Guardar punto</button><button id="locate" class="btn secondary">Ir a mi ubicación</button>
-<div class="stats"><div class="stat"><strong id="total">0</strong><span>Puntos registrados</span></div><div class="stat"><strong id="types">0</strong><span>Categorías activas</span></div></div>
-<h2>Histórico</h2><div id="history" class="list"><p class="hint">Todavía no hay puntos guardados.</p></div><button id="clear" class="btn secondary">Borrar puntos de este navegador</button>
+<p class="hint">Los eventos y su historial se consultan desde el Dashboard. En esta versión, los registros todavía se guardan localmente en este navegador.</p>
 </aside></main>
 <section id="dashboard" class="dash-backdrop" role="dialog" aria-modal="true" aria-label="Dashboard de alertas">
  <div class="dash-shell">
@@ -135,7 +134,6 @@ function init3D(){
   sync3DPoints();
  });
  map3d.on('click',e=>{choose({lat:e.lngLat.lat,lng:e.lngLat.lng},false);sync3DSelected();});
- map3d.on('click','nazer-points-core',e=>{if(e.features&&e.features[0]){const p=e.features[0].properties;const ll=e.lngLat;choose({lat:ll.lat,lng:ll.lng},false);sync3DSelected();}});
 }
 function pointFeatures(){return points.map(p=>({type:'Feature',geometry:{type:'Point',coordinates:[p.lng,p.lat]},properties:{id:p.id,category:p.category,description:p.description||''}}))}
 function sync3DPoints(){if(map3d&&map3d.isStyleLoaded()&&map3d.getSource('nazer-points'))map3d.getSource('nazer-points').setData({type:'FeatureCollection',features:pointFeatures()});sync3DSelected()}
@@ -148,7 +146,7 @@ function setStatus(s){$('status').textContent=s}
 function pointerIcon(){return L.divIcon({className:'nazer-pointer-icon',html:'<span class="pin" aria-label="Puntero de ubicación"></span>',iconSize:[22,22],iconAnchor:[11,11]})}
 function choose(latlng,focus=true){selected=L.latLng(latlng.lat,latlng.lng);$('selected').textContent='Ubicación elegida: '+selected.lat.toFixed(5)+', '+selected.lng.toFixed(5);if(marker){marker.setLatLng(selected);marker.setIcon(pointerIcon());marker.setZIndexOffset(1000)}else{marker=L.marker(selected,{icon:pointerIcon(),keyboard:false,zIndexOffset:1000,interactive:false,pane:'markerPane'}).addTo(map)}if(focus)$('description').focus()}
 map.on('click',e=>choose(e.latlng));
-function render(){savedLayer.clearLayers();points.forEach(p=>{const color=colors[p.category]||'#54d8ed';L.circleMarker([p.lat,p.lng],{radius:8,color:'#fff',weight:2,fillColor:color,fillOpacity:.95}).bindPopup('<b>'+esc(p.category)+'</b><br>'+esc(p.description||'Sin descripción')+'<br><small>'+new Date(p.created).toLocaleString('es-AR')+'</small>').addTo(savedLayer)});$('total').textContent=points.length;$('types').textContent=new Set(points.map(p=>p.category)).size;$('history').innerHTML=points.length?points.slice().reverse().map(p=>'<div class="item"><strong>'+esc(p.category)+'</strong><span>'+esc(p.description||'Sin descripción')+'</span><div class="tag">'+new Date(p.created).toLocaleString('es-AR')+'</div><button class="btn secondary" data-go="'+p.id+'" style="margin-top:8px">Ver en mapa</button></div>').join(''):'<p class="hint">Todavía no hay puntos guardados.</p>';localStorage.setItem('nazer-map-points-v1',JSON.stringify(points));sync3DPoints()}
+function render(){savedLayer.clearLayers();points.forEach(p=>{const color=colors[p.category]||'#54d8ed';L.circleMarker([p.lat,p.lng],{radius:8,color:'#fff',weight:2,fillColor:color,fillOpacity:.95}).bindPopup('<b>'+esc(p.category)+'</b><br>'+esc(p.description||'Sin descripción')+'<br><small>'+new Date(p.created).toLocaleString('es-AR')+'</small>').addTo(savedLayer)});localStorage.setItem('nazer-map-points-v1',JSON.stringify(points));sync3DPoints()}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
 let activeAlertId=null,dashMap=null,dashAlertLayer=null,dashMarkers={};
@@ -216,8 +214,6 @@ $('detailForm').addEventListener('submit',async e=>{
  try{render();renderDashboard();setStatus('Alerta actualizada en este navegador.')}catch(err){setStatus('No se pudo guardar: el navegador puede haberse quedado sin espacio.')}
 });
 $('save').addEventListener('click',()=>{if(!selected){setStatus('Primero tocá el mapa para elegir el lugar.');return}const p={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),lat:selected.lat,lng:selected.lng,category:$('category').value,description:$('description').value.trim(),created:new Date().toISOString()};points.push(p);render();$('description').value='';setStatus('Punto guardado en este navegador.');});
-$('history').addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(!b)return;const p=points.find(x=>x.id===b.dataset.go);if(p){map.setView([p.lat,p.lng],17);savedLayer.eachLayer(l=>{if(l.getLatLng&&l.getLatLng().lat===p.lat&&l.getLatLng().lng===p.lng)l.openPopup()})}});
-$('clear').addEventListener('click',()=>{if(confirm('¿Borrar todos los puntos guardados en este navegador?')){points=[];render();setStatus('Histórico local borrado.')}});
 $('searchBtn').addEventListener('click',searchPlace);$('search').addEventListener('keydown',e=>{if(e.key==='Enter')searchPlace()});
 async function searchPlace(){const q=$('search').value.trim();if(!q)return;setStatus('Buscando ubicación…');try{const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q='+encodeURIComponent(q+', Buenos Aires, Argentina'));const a=await r.json();if(!a.length){setStatus('No encontré ese lugar. Probá con otra dirección.');return}const ll=L.latLng(Number(a[0].lat),Number(a[0].lon));map.setView(ll,16);choose(ll);if(is3D&&map3d)map3d.flyTo({center:[ll.lng,ll.lat],zoom:16,pitch:58,bearing:-18});setStatus('Ubicación encontrada.')}catch(e){setStatus('No se pudo buscar. Revisá tu conexión y probá otra vez.')}}
 $('locate').addEventListener('click',()=>{if(!navigator.geolocation){setStatus('Este navegador no permite ubicación.');return}setStatus('Buscando tu ubicación…');navigator.geolocation.getCurrentPosition(pos=>{const ll=L.latLng(pos.coords.latitude,pos.coords.longitude);map.setView(ll,16);choose(ll);if(is3D&&map3d)map3d.flyTo({center:[ll.lng,ll.lat],zoom:16,pitch:58,bearing:-18});setStatus('Ubicación encontrada.')},()=>setStatus('No se pudo obtener la ubicación. Revisá los permisos.'),{enableHighAccuracy:true,timeout:10000})});
