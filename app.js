@@ -4,6 +4,7 @@
   const STORE_KEY = 'nazer-map-points-v1';
   const CENTER = [-34.532, -58.516];
   const MAX_LIST = 100;
+  const MAX_POINTS = 5000;
   // viewbox de Vicente López para priorizar resultados de búsqueda: oeste,norte,este,sur
   const VIEWBOX = '-58.58,-34.47,-58.44,-34.58';
 
@@ -45,9 +46,12 @@
       catch { setStatus('No se pudo guardar en este navegador (almacenamiento lleno o bloqueado).'); }
     }, 250);
   }
-  window.addEventListener('pagehide', () => {
+  const flush = () => {
+    clearTimeout(saveTimer);
     try { localStorage.setItem(STORE_KEY, JSON.stringify(points)); } catch { /* sin acción */ }
-  });
+  };
+  window.addEventListener('pagehide', flush);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
 
   // ---------- Estado ----------
   let points = load();
@@ -125,7 +129,7 @@
     const shown = visible.slice(-MAX_LIST).reverse();
     $('history').innerHTML = shown.map(p => {
       const color = (CAT.get(p.category) || {}).color || DEFAULT_COLOR;
-      return `<div class="item"><strong><span class="dot" style="background:${color}"></span>${esc(p.category)}</strong>` +
+      return `<div class="item" style="--c:${color}"><strong><span class="dot" style="background:${color}"></span>${esc(p.category)}</strong>` +
         `<span>${esc(p.description || 'Sin descripción')}</span><div class="tag">${fmtDate(p.created)}</div>` +
         `<div class="row"><button class="btn secondary small" data-go="${esc(p.id)}">Ver en mapa</button>` +
         `<button class="btn secondary small" data-del="${esc(p.id)}" aria-label="Borrar este punto">Borrar</button></div></div>`;
@@ -143,6 +147,7 @@
       description: $('description').value.trim(),
       created: new Date().toISOString(),
     };
+    if (filter && filter !== p.category) { filter = ''; $('filter').value = ''; applyFilterToMarkers(); }
     points.push(p);
     addMarker(p);
     renderList();
@@ -221,7 +226,8 @@
       let added = 0;
       for (const f of feats) {
         const c = f?.geometry?.type === 'Point' && f.geometry.coordinates;
-        if (!c || !Number.isFinite(c[0]) || !Number.isFinite(c[1])) continue;
+        if (points.length >= MAX_POINTS) break;
+        if (!c || !Number.isFinite(c[0]) || !Number.isFinite(c[1]) || Math.abs(c[0]) > 180 || Math.abs(c[1]) > 90) continue;
         const id = typeof f.id === 'string' ? f.id : newId();
         if (known.has(id)) continue;
         const pr = f.properties || {};
